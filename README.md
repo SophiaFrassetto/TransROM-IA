@@ -649,8 +649,8 @@ class TranslationCache:
 
 ### 🎮 Core Features
 - [ ] Project Setup
-  - [ ] Repository initialization
-  - [ ] Basic project structure
+  - [x] Repository initialization
+  - [x] Basic project structure
   - [ ] Development environment setup
   - [ ] CI/CD pipeline
   - [ ] Documentation setup
@@ -665,7 +665,7 @@ class TranslationCache:
   - [ ] Image processing service
 
 - [ ] Frontend Development
-  - [ ] Basic layout
+  - [x] Basic layout
   - [ ] Authentication pages
   - [ ] ROM upload interface
   - [ ] Translation management
