@@ -3,8 +3,9 @@ import { AppProps } from 'next/app';
 import { ThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Head from 'next/head';
+import { ThemeOptions } from '@mui/material/styles';
 
-let theme = createTheme({
+const themeOptions: ThemeOptions = {
   breakpoints: {
     values: {
       xs: 0,
@@ -106,7 +107,7 @@ let theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: '4px',
-          padding: { xs: '6px 12px', sm: '8px 16px' },
+          padding: '8px 16px',
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           transition: 'all 0.3s ease',
           '&:hover': {
@@ -182,7 +183,9 @@ let theme = createTheme({
       },
     },
   },
-});
+};
+
+let theme = createTheme(themeOptions);
 
 // Make the theme responsive
 theme = responsiveFontSizes(theme);
