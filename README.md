@@ -1,70 +1,133 @@
-# 🎮 TransROM-IA - AI-Assisted ROM Translation and Dubbing System
+# 🎮 TransROM-IA
+
+<div align="center">
+
+![TransROM-IA Logo](https://via.placeholder.com/150)
 
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-17.0.2-blue.svg)](https://reactjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-green.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-Latest-blue.svg)](https://reactjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-blue.svg)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Development-orange.svg)]()
 
-> 🚀 A comprehensive system for translating and dubbing classic video games using AI. The system is designed to be console-agnostic, starting with GBA support and extensible to other consoles.
+**Uma plataforma inovadora para tradução e dublagem de ROMs de videogames usando Inteligência Artificial**
 
-## 📋 Table of Contents
-- [Project Overview](#-project-overview)
-- [Quick Start](#-quick-start)
-- [Documentation](#-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
+[Tecnologias](#-tecnologias) •
+[Instalação](#-instalação) •
+[Como Executar](#-como-executar) •
+[Contribuição](#-contribuição) •
+[Licença](#-licença)
 
-## 🎯 Project Overview
-TransROM-IA is a comprehensive system for translating and dubbing classic video games using AI. The system is designed to be console-agnostic, starting with GBA support and extensible to other consoles. It combines modern AI technologies with classic game preservation, offering both free and paid service options.
+</div>
 
-## ⚡ Quick Start
+## 📋 Sobre o Projeto
 
-1. **Environment Setup** ⚙️
-   - Python 3.9+
-   - Node.js 16+
-   - Docker
-   - Redis
-   - PostgreSQL
+TransROM-IA é uma plataforma avançada que combina tecnologias modernas de IA com preservação de jogos clássicos. O sistema foi projetado para ser agnóstico em relação aos consoles, começando com suporte para GBA e sendo extensível para outras plataformas. Nossa solução oferece:
 
-2. **Installation** 📦
-   ```bash
-   # Clone the repository
-   git clone https://github.com/yourusername/TransROM-IA.git
-   cd TransROM-IA
+- 🤖 Tradução automática de textos usando IA
+- 🎙️ Dublagem com vozes sintéticas de alta qualidade
+- 🎮 Suporte inicial para ROMs de GBA
+- 🔄 Sistema extensível para outros consoles
+- 🌐 Interface web moderna e intuitiva
 
-   # Install dependencies
-   pip install -r requirements.txt
-   npm install
+## 🚀 Tecnologias
 
-   # Configure environment
-   cp .env.example .env
-   # Edit .env with your settings
+### Backend
+- [Python 3.9+](https://www.python.org/)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [SQLAlchemy](https://www.sqlalchemy.org/)
+- [Alembic](https://alembic.sqlalchemy.org/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [Pydantic](https://pydantic-docs.helpmanual.io/)
 
-   # Initialize database
-   python manage.py migrate
-   ```
+### Frontend
+- [React](https://reactjs.org/)
+- [Next.js](https://nextjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [TailwindCSS](https://tailwindcss.com/)
 
-3. **Development** 💻
-   ```bash
-   # Start backend server
-   python manage.py runserver
+## 💻 Instalação
 
-   # Start frontend development server
-   npm run dev
-   ```
+### Pré-requisitos
+- Python 3.9+
+- Node.js 16+
+- PostgreSQL
+- Git
 
-## 📚 Documentation
+### Configuração do Ambiente
 
-For detailed documentation, please refer to the following files:
+1. Clone o repositório
+```bash
+git clone https://github.com/seu-usuario/TransROM-IA.git
+cd TransROM-IA
+```
 
-- [System Architecture](docs/architecture.md) - Detailed system design and components
-- [Development Guide](docs/development.md) - Setup and development guidelines
-- [Features and Progress](docs/features.md) - Current features and development progress
-- [Credits and Acknowledgments](docs/credits.md) - Project contributors and acknowledgments
+2. Configure o ambiente virtual Python
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+source .venv/bin/activate
+```
 
-## 🤝 Contributing
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+3. Instale as dependências do backend
+```bash
+cd backend
+pip install -r requirements.txt
+```
 
-## 📝 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+4. Instale as dependências do frontend
+```bash
+cd frontend
+npm install
+```
+
+5. Configure as variáveis de ambiente
+```bash
+# Na pasta backend
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+```
+
+## 🎯 Como Executar
+
+### Backend
+
+1. Aplique as migrações do banco de dados
+```bash
+cd backend
+alembic upgrade head
+```
+
+2. Inicie o servidor de desenvolvimento
+```bash
+uvicorn app.main:app --reload
+```
+O backend estará disponível em `http://localhost:8000`
+
+### Frontend
+
+1. Inicie o servidor de desenvolvimento
+```bash
+cd frontend
+npm run dev
+```
+O frontend estará disponível em `http://localhost:3000`
+
+## 📝 API Documentation
+
+A documentação da API está disponível em:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+---
+
+<div align="center">
+Feito com ❤️ pela equipe TransROM-IA
+</div>
