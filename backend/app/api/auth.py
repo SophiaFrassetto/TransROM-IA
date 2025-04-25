@@ -1,20 +1,19 @@
+import os
+from datetime import datetime, timedelta
+
+from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-from google.oauth2 import id_token
-from google.auth.transport import requests
 from google_auth_oauthlib.flow import Flow
-import os
-from dotenv import load_dotenv
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
+from jose import jwt
 from passlib.context import CryptContext
-import json
+from sqlalchemy.orm import Session
 
-from ..database.database import get_db
-from ..models.user import User
-from ..schemas.auth import Token, User as UserSchema, LoginRequest
-from ..services.auth import create_or_update_user, get_current_user, authenticate_user
+from app.database.database import get_db
+from app.models.user import User
+from app.schemas.auth import LoginRequest, Token
+from app.schemas.auth import User as UserSchema
+from app.services.auth import authenticate_user, create_or_update_user, get_current_user
 
 load_dotenv()
 
@@ -40,12 +39,16 @@ client_config = {
     }
 }
 
+# Module-level dependencies
+current_user_dependency = Depends(get_current_user)
+
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 @router.post("/login", response_model=Token)
 async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
@@ -59,29 +62,34 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     access_token = create_access_token(data={"sub": user.email})
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @router.post("/google/token", response_model=Token)
 async def google_login(code: str, db: Session = Depends(get_db)):
     try:
         # Criar o objeto Flow
         flow = Flow.from_client_config(
             client_config,
-            scopes=["openid", "https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"],
-            redirect_uri=GOOGLE_REDIRECT_URI
+            scopes=[
+                "openid",
+                "https://www.googleapis.com/auth/userinfo.email",
+                "https://www.googleapis.com/auth/userinfo.profile",
+            ],
+            redirect_uri=GOOGLE_REDIRECT_URI,
         )
-        
+
         # Trocar o código de autorização por tokens
         flow.fetch_token(code=code)
-        
+
         # Obter as informações do usuário
         session = flow.authorized_session()
-        user_info = session.get('https://www.googleapis.com/oauth2/v2/userinfo').json()
+        user_info = session.get("https://www.googleapis.com/oauth2/v2/userinfo").json()
 
         # Criar ou atualizar usuário no banco de dados
         user_data = {
             "email": user_info["email"],
             "google_id": user_info["id"],
             "name": user_info.get("name"),
-            "picture": user_info.get("picture")
+            "picture": user_info.get("picture"),
         }
 
         user = await create_or_update_user(user_data, db)
@@ -89,13 +97,14 @@ async def google_login(code: str, db: Session = Depends(get_db)):
         return {"access_token": access_token, "token_type": "bearer"}
 
     except Exception as e:
-        print(f"Error in Google authentication: {str(e)}")  # Para debug
+        print(f"Error in Google authentication: {e!s}")  # Para debug
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}",
+            detail=f"Authentication failed: {e!s}",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
+
 
 @router.get("/me", response_model=UserSchema)
-async def read_users_me(current_user: User = Depends(get_current_user)):
+async def read_users_me(current_user: User = current_user_dependency):
     return current_user

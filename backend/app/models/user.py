@@ -1,17 +1,65 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime
-from sqlalchemy.sql import func
-from ..database.database import Base
+"""User model for TransROM-IA.
 
-class User(Base):
+This module defines the User model which represents user accounts
+in the system, supporting both local and Google OAuth authentication.
+"""
+
+from sqlalchemy import Boolean, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.models.base import BaseModel
+
+
+class User(BaseModel):
+    """User model representing application users.
+
+    This model stores user information for both local and Google OAuth
+    authenticated users. It includes basic user details, authentication
+    information, and role flags.
+
+    Attributes:
+        email: User's email address (unique)
+        google_id: Google OAuth ID (unique, optional)
+        password: Hashed password (optional for Google OAuth users)
+        name: User's full name
+        picture: URL to user's profile picture
+        is_active: Whether the user account is active
+        is_superuser: Whether the user has superuser privileges
+    """
+
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    google_id = Column(String, unique=True, index=True, nullable=True)
-    password = Column(String, nullable=True)  # Nullable for Google OAuth users
-    name = Column(String)
-    picture = Column(String)
-    is_active = Column(Boolean, default=True)
-    is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    email: Mapped[str] = mapped_column(
+        String(length=255),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+    google_id: Mapped[str | None] = mapped_column(
+        String(length=255),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
+    password: Mapped[str | None] = mapped_column(
+        String(length=255),
+        nullable=True,
+    )
+    name: Mapped[str] = mapped_column(
+        String(length=255),
+        nullable=False,
+    )
+    picture: Mapped[str | None] = mapped_column(
+        String(length=1024),
+        nullable=True,
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False,
+    )
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )

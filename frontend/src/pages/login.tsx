@@ -17,13 +17,27 @@ export default function Login() {
   const { user, login, error: authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       router.push('/');
     }
-  }, [user, router]);
+
+    const { error: queryError } = router.query;
+    if (queryError) {
+      switch (queryError) {
+        case 'auth_failed':
+          setError('Authentication failed. Please try again.');
+          break;
+        case 'google_auth_failed':
+          setError('Google authentication failed. Please try again.');
+          break;
+        default:
+          setError('An error occurred. Please try again.');
+      }
+    }
+  }, [router.query, user]);
 
   useEffect(() => {
     if (authError) {
@@ -54,23 +68,16 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-    const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
-
-    if (!clientId || !redirectUri) {
-      setError('Google authentication is not properly configured');
-      return;
+  const handleGoogleLogin = async () => {
+    try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/api/v1/auth/google/url`);
+      const data = await response.json();
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Failed to get Google auth URL:', error);
+      setError('Failed to initiate Google login. Please try again.');
     }
-
-    const googleAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    googleAuthUrl.searchParams.append('client_id', clientId);
-    googleAuthUrl.searchParams.append('response_type', 'code');
-    googleAuthUrl.searchParams.append('scope', 'email profile');
-    googleAuthUrl.searchParams.append('redirect_uri', redirectUri);
-    googleAuthUrl.searchParams.append('prompt', 'select_account');
-
-    window.location.href = googleAuthUrl.toString();
   };
 
   if (user) {
@@ -136,9 +143,16 @@ export default function Login() {
 
         <Button
           fullWidth
-          variant="outlined"
+          variant="contained"
           startIcon={<GoogleIcon />}
           onClick={handleGoogleLogin}
+          sx={{
+            mt: 2,
+            backgroundColor: '#4285f4',
+            '&:hover': {
+              backgroundColor: '#3367d6',
+            },
+          }}
         >
           Sign in with Google
         </Button>

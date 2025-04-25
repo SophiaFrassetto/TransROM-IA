@@ -1,9 +1,22 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+"""Authentication schemas for TransROM-IA.
+
+This module provides Pydantic models for authentication-related data structures.
+"""
+
 from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Token(BaseModel):
+    """Schema for authentication token response.
+
+    Attributes:
+        access_token: The JWT access token
+        token_type: The type of token (usually "bearer")
+    """
+
     access_token: str
     token_type: str
 
@@ -18,8 +31,18 @@ class UserBase(BaseModel):
     picture: str | None = None
 
 
-class UserCreate(UserBase):
+class UserCreate(BaseModel):
+    """Schema for user registration data.
+
+    Attributes:
+        email: User's email address
+        password: User's password
+        full_name: User's full name
+    """
+
+    email: EmailStr
     password: str
+    full_name: str
 
 
 class User(UserBase):
@@ -29,13 +52,21 @@ class User(UserBase):
     created_at: datetime
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders={
             datetime: lambda dt: dt.isoformat() if dt else None
         }
+    )
 
 
-class LoginRequest(BaseModel):
+class LoginData(BaseModel):
+    """Schema for login request data.
+
+    Attributes:
+        email: User's email address
+        password: User's password
+    """
+
     email: EmailStr
     password: str
