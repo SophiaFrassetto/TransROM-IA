@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 {
   "$schema": "https://cursor.sh/schemas/rules-v1.json",
