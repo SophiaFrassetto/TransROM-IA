@@ -207,3 +207,7 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+#Roms
+roms_examples/
+roms_test_files/
