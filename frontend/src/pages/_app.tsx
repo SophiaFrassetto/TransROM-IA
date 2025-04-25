@@ -46,29 +46,59 @@ let theme = createTheme({
   typography: {
     fontFamily: '"Share Tech Mono", "VT323", "Roboto", "Arial", sans-serif',
     h1: {
-      fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+      fontSize: '2.5rem',
+      '@media (max-width:900px)': {
+        fontSize: '2rem',
+      },
+      '@media (max-width:600px)': {
+        fontSize: '1.5rem',
+      },
       fontWeight: 400,
       letterSpacing: '0.5px',
     },
     h2: {
-      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '2rem' },
+      fontSize: '2rem',
+      '@media (max-width:900px)': {
+        fontSize: '1.5rem',
+      },
+      '@media (max-width:600px)': {
+        fontSize: '1.25rem',
+      },
       fontWeight: 400,
       letterSpacing: '0.5px',
     },
     h3: {
-      fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.75rem' },
+      fontSize: '1.75rem',
+      '@media (max-width:900px)': {
+        fontSize: '1.25rem',
+      },
+      '@media (max-width:600px)': {
+        fontSize: '1.1rem',
+      },
       fontWeight: 400,
       letterSpacing: '0.5px',
     },
     body1: {
-      fontSize: { xs: '0.875rem', sm: '1rem', md: '1.125rem' },
+      fontSize: '1.125rem',
+      '@media (max-width:900px)': {
+        fontSize: '1rem',
+      },
+      '@media (max-width:600px)': {
+        fontSize: '0.875rem',
+      },
       letterSpacing: '0.3px',
     },
     button: {
       textTransform: 'none',
       fontWeight: 400,
       letterSpacing: '0.5px',
-      fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+      fontSize: '1rem',
+      '@media (max-width:900px)': {
+        fontSize: '0.875rem',
+      },
+      '@media (max-width:600px)': {
+        fontSize: '0.75rem',
+      },
     },
   },
   components: {
