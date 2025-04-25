@@ -1,0 +1,63 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+{
+  "$schema": "https://cursor.sh/schemas/rules-v1.json",
+  "rules": {
+    "documentation": {
+      "enabled": true,
+      "requireFor": ["functions", "classes", "methods", "modules"],
+      "strict": true,
+      "languageSpecific": {
+        "python": {
+          "style": "google",
+          "requiredSections": ["Args", "Returns", "Raises"],
+          "examples": true,
+          "typeHints": true
+        },
+        "typescript": {
+          "style": "tsdoc",
+          "requiredTags": ["param", "returns", "example"]
+        }
+      }
+    },
+    "linting": {
+      "ruff": {
+        "enabled": true,
+        "configPath": "./pyproject.toml",
+        "autoFix": true,
+        "severityLevel": "error"
+      }
+    },
+    "codeStyle": {
+      "python": {
+        "quoteStyle": "double",
+        "indentSize": 4,
+        "trailingComma": "none",
+        "importSorting": "ruff"
+      },
+      "typescript": {
+        "semicolons": true,
+        "quoteStyle": "single",
+        "indentSize": 2
+      }
+    },
+    "ai": {
+      "temperature": 0.3,
+      "contextWindow": "project",
+      "codeCompletion": {
+        "documentationFirst": true
+      }
+    },
+    "restrictions": {
+      "disallow": [
+        "undocumentedCode",
+        "typeAny",
+        "consoleLog"
+      ]
+    }
+  }
+
+}

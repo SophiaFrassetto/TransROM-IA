@@ -1,0 +1,5 @@
+"ruff": {
+  "enabled": true,
+  "configPath": "./pyproject.toml",
+  "autoFix": true
+}

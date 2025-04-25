@@ -14,7 +14,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 
 export default function Login() {
   const router = useRouter();
-  const { user, login } = useAuth();
+  const { user, login, error: authError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,10 +25,17 @@ export default function Login() {
     }
   }, [user, router]);
 
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
+
   const handleTraditionalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:8000/auth/login', {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -41,8 +48,7 @@ export default function Login() {
       }
 
       const data = await response.json();
-      login(data.access_token);
-      router.push('/');
+      await login(data.access_token);
     } catch (err) {
       setError('Invalid email or password');
     }
@@ -68,7 +74,7 @@ export default function Login() {
   };
 
   if (user) {
-    return null; // O redirecionamento será tratado pelo useEffect
+    return null;
   }
 
   return (

@@ -13,7 +13,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (token: string) => void;
+  error: string | null;
+  login: (token: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -35,7 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:8000/auth/me', {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/auth/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -44,30 +47,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
+        setError(null);
       } else {
         localStorage.removeItem('token');
+        setError('Failed to fetch user data');
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
       localStorage.removeItem('token');
+      setError('An error occurred while fetching user data');
     } finally {
       setLoading(false);
     }
   };
 
-  const login = (token: string) => {
+  const login = async (token: string) => {
     localStorage.setItem('token', token);
-    fetchUserData(token);
+    await fetchUserData(token);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
+    setError(null);
     router.push('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
