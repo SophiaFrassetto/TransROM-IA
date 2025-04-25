@@ -4,6 +4,8 @@ import { ThemeProvider, createTheme, responsiveFontSizes } from '@mui/material/s
 import CssBaseline from '@mui/material/CssBaseline';
 import Head from 'next/head';
 import { ThemeOptions } from '@mui/material/styles';
+import { AuthProvider } from '../contexts/AuthContext';
+import theme from '../styles/theme';
 
 const themeOptions: ThemeOptions = {
   breakpoints: {
@@ -200,7 +202,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         />
       </Head>
       <CssBaseline />
-      <Component {...pageProps} />
+      <AuthProvider>
+        <Component {...pageProps} />
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -1,153 +1,90 @@
-import React, { useState } from 'react';
+import { useEffect } from 'react';
 import {
   Box,
-  Paper,
+  Container,
   Typography,
-  Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Switch,
-  FormControlLabel,
-  Button,
-  Divider,
+  Paper,
   Avatar,
+  Grid,
+  Divider,
 } from '@mui/material';
-import Layout from '@/components/layout/Layout';
+import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'next/router';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
-const SettingsPage: React.FC = () => {
-  const [language, setLanguage] = useState('en');
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+export default function Settings() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
-    <Layout>
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h3" component="h1" gutterBottom>
-                Settings
-              </Typography>
-              <Typography variant="body1" paragraph>
-                Customize your TransROM-IA experience
-              </Typography>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
+    <ProtectedRoute>
+      <Container maxWidth="md">
+        <Typography variant="h4" component="h1" gutterBottom>
+          Settings
+        </Typography>
+        <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Avatar
+                src={user.picture || undefined}
+                alt={user.name || user.email}
+                sx={{
+                  width: 150,
+                  height: 150,
+                  border: '4px solid #fff',
+                  boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+                }}
+              >
+                {!user.picture && (user.name?.[0] || user.email[0]).toUpperCase()}
+              </Avatar>
+            </Grid>
+            <Grid item xs={12} md={8}>
               <Typography variant="h5" gutterBottom>
-                Profile Settings
+                Profile Information
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Avatar
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    bgcolor: 'secondary.main',
-                    mr: 2,
-                  }}
-                >
-                  U
-                </Avatar>
-                <Button variant="outlined" color="primary">
-                  Change Avatar
-                </Button>
+              <Divider sx={{ mb: 2 }} />
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Name
+                </Typography>
+                <Typography variant="body1">{user.name || 'Not provided'}</Typography>
               </Box>
-              <TextField
-                fullWidth
-                label="Username"
-                defaultValue="User123"
-                margin="normal"
-              />
-              <TextField
-                fullWidth
-                label="Email"
-                defaultValue="user@example.com"
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Save Profile Changes
-              </Button>
-            </Paper>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Email
+                </Typography>
+                <Typography variant="body1">{user.email}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Account Type
+                </Typography>
+                <Typography variant="body1">
+                  {user.is_superuser ? 'Administrator' : 'User'}
+                </Typography>
+              </Box>
+            </Grid>
           </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h5" gutterBottom>
-                Preferences
-              </Typography>
-              <FormControl fullWidth margin="normal">
-                <InputLabel>Default Language</InputLabel>
-                <Select
-                  value={language}
-                  label="Default Language"
-                  onChange={(e) => setLanguage(e.target.value)}
-                >
-                  <MenuItem value="en">English</MenuItem>
-                  <MenuItem value="es">Spanish</MenuItem>
-                  <MenuItem value="fr">French</MenuItem>
-                  <MenuItem value="de">German</MenuItem>
-                  <MenuItem value="it">Italian</MenuItem>
-                  <MenuItem value="pt">Portuguese</MenuItem>
-                  <MenuItem value="ja">Japanese</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={notifications}
-                    onChange={(e) => setNotifications(e.target.checked)}
-                  />
-                }
-                label="Enable Notifications"
-                sx={{ mt: 2 }}
-              />
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={darkMode}
-                    onChange={(e) => setDarkMode(e.target.checked)}
-                  />
-                }
-                label="Dark Mode"
-                sx={{ mt: 2 }}
-              />
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h5" gutterBottom>
-                Account Settings
-              </Typography>
-              <Button
-                variant="outlined"
-                color="error"
-                sx={{ mr: 2 }}
-              >
-                Delete Account
-              </Button>
-              <Button
-                variant="outlined"
-                color="primary"
-              >
-                Export Data
-              </Button>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
-    </Layout>
+        </Paper>
+      </Container>
+    </ProtectedRoute>
   );
-};
-
-export default SettingsPage; 
+} 

@@ -3,17 +3,17 @@
 ## 📊 Progress Tracking
 
 ### 🎮 Core Features
-- [ ] Project Setup
+- [x] Project Setup
   - [x] Repository initialization
   - [x] Basic project structure
-  - [ ] Development environment setup
+  - [x] Development environment setup
   - [ ] CI/CD pipeline
-  - [ ] Documentation setup
+  - [x] Documentation setup
 
 - [ ] Backend Development
-  - [ ] API Framework setup
-  - [ ] Database models
-  - [ ] Authentication system
+  - [x] API Framework setup (FastAPI)
+  - [x] Database models
+  - [x] Authentication system (Google OAuth)
   - [ ] File upload system
   - [ ] Translation service
   - [ ] Audio processing service
@@ -21,10 +21,16 @@
 
 - [ ] Frontend Development
   - [x] Basic layout
-  - [ ] Authentication pages
+  - [x] Authentication pages
+    - [x] Google OAuth integration
+    - [x] Login page
+    - [x] Authentication context
+    - [x] Protected routes
+  - [x] User settings
+    - [x] Profile display
+    - [x] Avatar integration
   - [ ] ROM upload interface
   - [ ] Translation management
-  - [ ] User settings
   - [ ] Progress tracking
   - [ ] Download system
 
@@ -83,9 +89,9 @@
   - [ ] Audio injection
 
 ### 🛠️ Infrastructure
-- [ ] Development Environment
+- [x] Development Environment
+  - [x] Database setup (PostgreSQL)
   - [ ] Docker setup
-  - [ ] Database setup
   - [ ] Cache system
   - [ ] File storage
 - [ ] Production Environment
@@ -96,13 +102,13 @@
 
 ### 📚 Documentation
 - [ ] User Documentation
-  - [ ] Installation guide
+  - [x] Installation guide
   - [ ] User manual
   - [ ] Troubleshooting guide
-- [ ] Developer Documentation
-  - [ ] API documentation
-  - [ ] Architecture guide
-  - [ ] Contribution guide
+- [x] Developer Documentation
+  - [x] API documentation
+  - [x] Architecture guide
+  - [x] Contribution guide
 - [ ] Console-specific Documentation
   - [ ] GBA guide
   - [ ] SNES guide
