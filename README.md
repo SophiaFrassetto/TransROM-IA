@@ -4,9 +4,9 @@
 
 ![TransROM-IA Logo](https://via.placeholder.com/150)
 
-[![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/Python-3.13-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-green.svg)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-Latest-blue.svg)](https://reactjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-Latest-black.svg)](https://nextjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Latest-blue.svg)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Development-orange.svg)]()
@@ -34,15 +34,17 @@ TransROM-IA é uma plataforma avançada que combina tecnologias modernas de IA c
 ## 🚀 Tecnologias
 
 ### Backend
-- [Python 3.9+](https://www.python.org/)
+- [Python 3.13](https://www.python.org/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [SQLAlchemy](https://www.sqlalchemy.org/)
 - [Alembic](https://alembic.sqlalchemy.org/)
 - [PostgreSQL](https://www.postgresql.org/)
 - [Pydantic](https://pydantic-docs.helpmanual.io/)
+- [AsyncPG](https://magicstack.github.io/asyncpg/)
+- [Python-Jose](https://python-jose.readthedocs.io/)
+- [Passlib](https://passlib.readthedocs.io/)
 
 ### Frontend
-- [React](https://reactjs.org/)
 - [Next.js](https://nextjs.org/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [TailwindCSS](https://tailwindcss.com/)
@@ -50,7 +52,7 @@ TransROM-IA é uma plataforma avançada que combina tecnologias modernas de IA c
 ## 💻 Instalação
 
 ### Pré-requisitos
-- Python 3.9+
+- Python 3.13+
 - Node.js 16+
 - PostgreSQL
 - Git
@@ -121,6 +123,15 @@ O frontend estará disponível em `http://localhost:3000`
 A documentação da API está disponível em:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+## 🔐 Autenticação e Segurança
+
+O sistema utiliza:
+- JWT (JSON Web Tokens) para autenticação
+- Bcrypt para hash de senhas
+- HTTPS para comunicação segura
+- Validação de dados com Pydantic
+- Proteção contra ataques comuns (CSRF, XSS)
 
 ## 📄 Licença
 
