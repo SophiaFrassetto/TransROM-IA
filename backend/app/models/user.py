@@ -5,7 +5,7 @@ in the system, supporting both local and Google OAuth authentication.
 """
 
 from sqlalchemy import Boolean, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import BaseModel
 
@@ -25,6 +25,7 @@ class User(BaseModel):
         picture: URL to user's profile picture
         is_active: Whether the user account is active
         is_superuser: Whether the user has superuser privileges
+        translation_jobs: List of user's translation jobs
     """
 
     __tablename__ = "users"
@@ -63,3 +64,6 @@ class User(BaseModel):
         default=False,
         nullable=False,
     )
+
+    # Relationships
+    translation_jobs = relationship("TranslationJob", back_populates="user")

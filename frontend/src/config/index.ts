@@ -12,8 +12,8 @@ export const config = {
     version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
   },
   auth: {
-    tokenKey: 'transrom_token',
-    refreshTokenKey: 'transrom_refresh_token',
+    accessTokenKey: 'accessToken',
+    refreshTokenKey: 'refreshToken',
   },
   pagination: {
     defaultPageSize: 10,

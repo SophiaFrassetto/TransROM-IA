@@ -4,7 +4,7 @@ This module provides user-related business logic, including user management
 and authentication operations.
 """
 
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
@@ -73,7 +73,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         Returns:
             str: JWT access token
         """
-        expire = datetime.utcnow() + timedelta(
+        expire = datetime.now(UTC) + timedelta(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
         to_encode = {
@@ -83,7 +83,7 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         return jwt.encode(
             to_encode,
             settings.SECRET_KEY,
-            algorithm="HS256",
+            algorithm=settings.ALGORITHM,
         )
 
     async def authenticate(
@@ -226,13 +226,13 @@ class UserService(BaseService[User, UserCreate, UserUpdate]):
         )
         try:
             payload = jwt.decode(
-                token, settings.SECRET_KEY, algorithms=["HS256"]
+                token, settings.SECRET_KEY, algorithms=settings.ALGORITHM
             )
             user_id: str = payload.get("sub")
             if user_id is None:
                 raise credentials_exception
-        except JWTError:
-            raise credentials_exception
+        except JWTError as err:
+            raise credentials_exception from err
 
         query = select(self.model).where(self.model.id == int(user_id))
         result = await db.execute(query)

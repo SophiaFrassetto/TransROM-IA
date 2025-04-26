@@ -109,4 +109,4 @@ class UserInDB(UserBase):
     """
 
     password: Optional[str] = None
-    google_id: Optional[str] = None 
+    google_id: Optional[str] = None

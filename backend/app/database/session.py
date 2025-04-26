@@ -91,19 +91,3 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
             raise
         finally:
             await session.close()
-
-
-async def create_database() -> None:
-    """Create all database tables.
-
-    This function should be called during application startup
-    to ensure all tables exist.
-
-    Example:
-        ```python
-        await create_database()
-        ```
-    """
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Created database tables")

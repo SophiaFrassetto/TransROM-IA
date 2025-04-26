@@ -31,20 +31,6 @@ class UserBase(BaseModel):
     picture: str | None = None
 
 
-class UserCreate(BaseModel):
-    """Schema for user registration data.
-
-    Attributes:
-        email: User's email address
-        password: User's password
-        full_name: User's full name
-    """
-
-    email: EmailStr
-    password: str
-    full_name: str
-
-
 class User(UserBase):
     id: int
     is_active: bool
@@ -60,13 +46,6 @@ class User(UserBase):
     )
 
 
-class LoginData(BaseModel):
-    """Schema for login request data.
-
-    Attributes:
-        email: User's email address
-        password: User's password
-    """
-
-    email: EmailStr
-    password: str
+class RefreshTokenRequest(BaseModel):
+    """Request schema for token refresh."""
+    refresh_token: str

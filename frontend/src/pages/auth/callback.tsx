@@ -5,7 +5,7 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 
 export default function AuthCallback() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { signIn } = useAuth();
 
   useEffect(() => {
     const { code, error } = router.query;
@@ -39,10 +39,7 @@ export default function AuthCallback() {
       }
 
       const data = await response.json();
-      await login({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token
-      });
+      await signIn(data.access_token);
       router.push('/');
     } catch (error) {
       console.error('Authentication error:', error);

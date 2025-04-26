@@ -15,7 +15,7 @@ from app.core.config import get_settings
 from app.core.exceptions import AuthenticationError
 from app.core.logging import get_logger
 from app.database.session import get_async_session
-from app.schemas.auth import Token
+from app.schemas.auth import Token, RefreshTokenRequest
 from app.schemas.user import UserCreateGoogle
 from app.services.user import user_service
 
@@ -108,11 +108,13 @@ async def google_auth(
                 "redirect_uri": redirect_uri,
                 "grant_type": "authorization_code",
             }
-            logger.debug("Exchanging code for token at %s with data: %s", token_url, token_data)
-            
+            logger.debug(
+                "Exchanging code for token at %s with data: %s", token_url, token_data
+            )
+
             token_response = await client.post(token_url, data=token_data)
             token_json = token_response.json()
-            
+
             if "error" in token_json:
                 logger.error("Google OAuth token error: %s", token_json)
                 raise HTTPException(
@@ -124,10 +126,10 @@ async def google_auth(
             user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
             headers = {"Authorization": f"Bearer {token_json['access_token']}"}
             logger.debug("Fetching user info from %s", user_info_url)
-            
+
             user_response = await client.get(user_info_url, headers=headers)
             user_data = user_response.json()
-            
+
             if "error" in user_data:
                 logger.error("Google user info error: %s", user_data)
                 raise HTTPException(
@@ -135,7 +137,10 @@ async def google_auth(
                     detail=f"Failed to get user info: {user_data.get('error_description', user_data['error'])}",
                 )
 
-            logger.debug("Retrieved user data from Google: %s", {k: v for k, v in user_data.items() if k != "id"})
+            logger.debug(
+                "Retrieved user data from Google: %s",
+                {k: v for k, v in user_data.items() if k != "id"},
+            )
 
             # Create or update user
             google_user = UserCreateGoogle(
@@ -145,7 +150,7 @@ async def google_auth(
                 picture=user_data.get("picture"),
             )
             user = await user_service.authenticate_google(db, google_user)
-            
+
             token = Token(
                 access_token=user_service.create_access_token(user.id),
                 token_type="bearer",
@@ -164,4 +169,35 @@ async def google_auth(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Authentication failed: {e!s}",
+        ) from e
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    refresh_request: RefreshTokenRequest,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+) -> Token:
+    """Refresh access token using a refresh token.
+
+    Args:
+        refresh_request: Request containing the refresh token
+        db: Database session
+
+    Returns:
+        Token: New access token
+
+    Raises:
+        HTTPException: If refresh token is invalid or expired
+    """
+    try:
+        user = await user_service.verify_refresh_token(db, refresh_request.refresh_token)
+        return Token(
+            access_token=user_service.create_access_token(user.id),
+            token_type="bearer",
+        )
+    except AuthenticationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),
+            headers={"WWW-Authenticate": "Bearer"},
         ) from e

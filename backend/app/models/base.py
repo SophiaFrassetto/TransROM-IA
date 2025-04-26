@@ -57,7 +57,9 @@ class BaseModel(Base):
             user_dict = user.to_dict()
             ```
         """
-        return {column.name: getattr(self, column.name) for column in self.__table__.columns}
+        return {
+            column.name: getattr(self, column.name) for column in self.__table__.columns
+        }
 
     def __repr__(self) -> str:
         """Get string representation of the model.
@@ -71,5 +73,8 @@ class BaseModel(Base):
             print(user)  # User(id=1, name="John")
             ```
         """
-        values = ", ".join(f"{column.name}={getattr(self, column.name)!r}" for column in self.__table__.columns)
+        values = ", ".join(
+            f"{column.name}={getattr(self, column.name)!r}"
+            for column in self.__table__.columns
+        )
         return f"{self.__class__.__name__}({values})"

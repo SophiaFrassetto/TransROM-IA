@@ -2,104 +2,181 @@
  * API service layer for handling HTTP requests
  */
 
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { ApiResponse } from '@/types';
 import { config } from '@/config';
-import type { ApiResponse } from '@/types';
 
-/**
- * Create axios instance with default configuration
- */
-const axiosInstance: AxiosInstance = axios.create({
+// Define custom API interface extending AxiosInstance
+interface CustomAPI extends AxiosInstance {
+  setAuthToken: (token: string) => void;
+  clearAuthToken: () => void;
+  upload: (endpoint: string, formData: FormData, onProgress?: (progress: number) => void) => Promise<any>;
+}
+
+// Create axios instance with default config
+const axiosInstance = axios.create({
   baseURL: config.api.baseUrl,
   timeout: config.api.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+}) as CustomAPI;
 
-/**
- * Request interceptor for API calls
- */
+// Add request interceptor for adding authorization token
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem(config.auth.tokenKey);
+  (axiosConfig) => {
+    const token = localStorage.getItem(config.auth.accessTokenKey);
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      axiosConfig.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
+    return axiosConfig;
   },
   (error) => {
     return Promise.reject(error);
   }
 );
 
-/**
- * Response interceptor for API calls
- */
+// Add response interceptor for handling errors
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const refreshToken = localStorage.getItem(config.auth.refreshTokenKey);
-
-      try {
-        const response = await axiosInstance.post('/auth/refresh', { refreshToken });
-        const { token } = response.data;
-        localStorage.setItem(config.auth.tokenKey, token);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
-        return axiosInstance(originalRequest);
-      } catch (error) {
-        localStorage.removeItem(config.auth.tokenKey);
-        localStorage.removeItem(config.auth.refreshTokenKey);
-        window.location.href = '/auth/login';
-        return Promise.reject(error);
-      }
+  async (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      // Clear auth tokens and redirect to login
+      localStorage.removeItem(config.auth.accessTokenKey);
+      window.location.href = '/auth/login';
     }
-
     return Promise.reject(error);
   }
 );
 
+// Add custom methods to axios instance
+axiosInstance.setAuthToken = (token: string) => {
+  axiosInstance.defaults.headers.common.Authorization = `Bearer ${token}`;
+};
+
+axiosInstance.clearAuthToken = () => {
+  delete axiosInstance.defaults.headers.common.Authorization;
+};
+
+axiosInstance.upload = async (endpoint: string, formData: FormData, onProgress?: (progress: number) => void) => {
+  const response = await axiosInstance.post(endpoint, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: (progressEvent) => {
+      if (onProgress && progressEvent.total) {
+        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        onProgress(progress);
+      }
+    },
+  });
+  return response;
+};
+
+export const api = axiosInstance;
+
 /**
- * Generic API request handler
+ * Generic function to handle API requests
+ * @param requestFn - Function that returns a promise with the API request
+ * @returns ApiResponse with data, status, message, and optional error
  */
-const handleRequest = async <T>(
-  request: Promise<AxiosResponse>
-): Promise<ApiResponse<T>> => {
+async function handleRequest<T>(
+  requestFn: () => Promise<AxiosResponse>
+): Promise<ApiResponse<T>> {
   try {
-    const response = await request;
+    const response = await requestFn();
     return {
       data: response.data,
       status: response.status,
+      message: 'Request successful'
     };
   } catch (error: any) {
-    return {
-      data: null as T,
+    const errorResponse: ApiResponse<T> = {
+      data: undefined as unknown as T,
       status: error.response?.status || 500,
-      message: error.response?.data?.message || 'An error occurred',
+      message: error.response?.data?.message || 'Request failed',
+      error: error.response?.data?.error || error.message
     };
+    return errorResponse;
   }
-};
+}
 
 /**
- * API service methods
+ * GET request
+ * @param endpoint - API endpoint
+ * @param config - Axios request configuration
  */
-export const api = {
-  get: <T>(url: string, params?: object) =>
-    handleRequest<T>(axiosInstance.get(url, { params })),
+export function get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  return handleRequest<T>(() => api.get(endpoint, config));
+}
 
-  post: <T>(url: string, data?: object) =>
-    handleRequest<T>(axiosInstance.post(url, data)),
+/**
+ * POST request
+ * @param endpoint - API endpoint
+ * @param data - Request body
+ * @param config - Axios request configuration
+ */
+export function post<T>(
+  endpoint: string,
+  data?: any,
+  config?: AxiosRequestConfig
+): Promise<ApiResponse<T>> {
+  return handleRequest<T>(() => api.post(endpoint, data, config));
+}
 
-  put: <T>(url: string, data?: object) =>
-    handleRequest<T>(axiosInstance.put(url, data)),
+/**
+ * PUT request
+ * @param endpoint - API endpoint
+ * @param data - Request body
+ * @param config - Axios request configuration
+ */
+export function put<T>(
+  endpoint: string,
+  data?: any,
+  config?: AxiosRequestConfig
+): Promise<ApiResponse<T>> {
+  return handleRequest<T>(() => api.put(endpoint, data, config));
+}
 
-  delete: <T>(url: string) =>
-    handleRequest<T>(axiosInstance.delete(url)),
+/**
+ * DELETE request
+ * @param endpoint - API endpoint
+ * @param config - Axios request configuration
+ */
+export function del<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  return handleRequest<T>(() => api.delete(endpoint, config));
+}
 
-  patch: <T>(url: string, data?: object) =>
-    handleRequest<T>(axiosInstance.patch(url, data)),
-}; 
+/**
+ * PATCH request
+ * @param endpoint - API endpoint
+ * @param data - Request body
+ * @param config - Axios request configuration
+ */
+export function patch<T>(
+  endpoint: string,
+  data?: any,
+  config?: AxiosRequestConfig
+): Promise<ApiResponse<T>> {
+  return handleRequest<T>(() => api.patch(endpoint, data, config));
+}
+
+/**
+ * File upload request
+ * @param endpoint - API endpoint
+ * @param file - File to upload
+ * @param config - Axios request configuration
+ */
+export function upload<T>(
+  endpoint: string,
+  file: File,
+  config?: AxiosRequestConfig
+): Promise<ApiResponse<T>> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const uploadConfig: AxiosRequestConfig = {
+    ...config,
+    headers: {
+      ...config?.headers,
+      'Content-Type': 'multipart/form-data'
+    }
+  };
+
+  return handleRequest<T>(() => api.post(endpoint, formData, uploadConfig));
+} 

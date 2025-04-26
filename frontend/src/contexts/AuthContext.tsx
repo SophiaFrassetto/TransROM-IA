@@ -1,17 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { refreshAccessToken, AuthTokens, logout, getCurrentUser, User } from '../services/auth';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { config } from '@/config';
+import { api } from '@/services/api';
+import { User } from '@/types/user';
+import * as authService from '@/services/auth';
 
-interface AuthContextType {
+interface AuthContextData {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  accessToken: string | null;
-  refreshToken: string | null;
-  login: (tokens: AuthTokens) => Promise<void>;
-  logout: () => Promise<void>;
+  signIn: (accessToken: string) => Promise<void>;
+  signOut: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 /**
  * Provider component that wraps the app and makes auth object available to any
@@ -30,103 +32,79 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * }
  * ```
  */
-export function AuthProvider({ children }: { children: React.ReactNode }): JSX.Element {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
-  // Fetch user profile when access token changes
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!accessToken) {
-        setUser(null);
-        return;
+  const signIn = useCallback(async (accessToken: string) => {
+    try {
+      localStorage.setItem(config.auth.accessTokenKey, accessToken);
+      api.setAuthToken(accessToken);
+
+      const response = await authService.getCurrentUser(accessToken);
+      if (response.error) {
+        throw new Error(response.error);
       }
-
-      try {
-        const userData = await getCurrentUser(accessToken);
-        setUser(userData);
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error);
-        // If we fail to fetch the user profile, we should probably log out
-        handleLogout();
-      }
-    };
-
-    fetchUserProfile();
-  }, [accessToken]);
-
-  useEffect(() => {
-    // Check for stored tokens on mount
-    const storedAccessToken = localStorage.getItem('accessToken');
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    
-    if (storedAccessToken && storedRefreshToken) {
-      setAccessToken(storedAccessToken);
-      setRefreshToken(storedRefreshToken);
+      setUser(response.data);
+    } catch (error) {
+      console.error('Error during sign in:', error);
+      signOut();
+      throw error;
     }
-    
-    setIsLoading(false);
   }, []);
 
-  // Set up automatic token refresh
-  useEffect(() => {
-    if (!refreshToken) return;
+  const signOut = useCallback(() => {
+    localStorage.removeItem(config.auth.accessTokenKey);
+    setUser(null);
+    api.clearAuthToken();
+    router.push('/auth/login');
+  }, [router]);
 
-    const REFRESH_INTERVAL = 14 * 60 * 1000; // 14 minutes
-    const refreshTokens = async () => {
+  useEffect(() => {
+    const initializeAuth = async () => {
       try {
-        const tokens = await refreshAccessToken(refreshToken);
-        setAccessToken(tokens.access_token);
-        setRefreshToken(tokens.refresh_token);
-        localStorage.setItem('accessToken', tokens.access_token);
-        localStorage.setItem('refreshToken', tokens.refresh_token);
+        const storedToken = localStorage.getItem(config.auth.accessTokenKey);
+
+        if (storedToken) {
+          api.setAuthToken(storedToken);
+
+          try {
+            const response = await authService.getCurrentUser(storedToken);
+            if (response.error) {
+              throw new Error(response.error);
+            }
+            setUser(response.data);
+          } catch (error) {
+            console.error('Error getting user info:', error);
+            signOut();
+          }
+        }
       } catch (error) {
-        console.error('Failed to refresh token:', error);
-        handleLogout();
+        console.error('Error initializing auth:', error);
+        signOut();
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const intervalId = setInterval(refreshTokens, REFRESH_INTERVAL);
-    return () => clearInterval(intervalId);
-  }, [refreshToken]);
+    initializeAuth();
+  }, [signOut]);
 
-  const handleLogin = async (tokens: AuthTokens) => {
-    setAccessToken(tokens.access_token);
-    setRefreshToken(tokens.refresh_token);
-    localStorage.setItem('accessToken', tokens.access_token);
-    localStorage.setItem('refreshToken', tokens.refresh_token);
-  };
-
-  const handleLogout = async () => {
-    try {
-      if (refreshToken) {
-        await logout(refreshToken);
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    } finally {
-      setUser(null);
-      setAccessToken(null);
-      setRefreshToken(null);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    }
-  };
-
-  const value = {
-    user,
-    isAuthenticated: !!user,
-    isLoading,
-    accessToken,
-    refreshToken,
-    login: handleLogin,
-    logout: handleLogout
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        signIn,
+        signOut,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 /**
  * Hook for accessing the authentication context
@@ -144,9 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }): JSX.E
  * }
  * ```
  */
-export function useAuth(): AuthContextType {
+export function useAuth(): AuthContextData {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

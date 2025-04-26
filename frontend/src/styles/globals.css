@@ -167,4 +167,12 @@
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
+}
+
+.rotating-icon {
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
 } 

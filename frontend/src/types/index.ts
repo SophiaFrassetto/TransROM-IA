@@ -2,43 +2,49 @@
  * Common type definitions for the application
  */
 
-export interface User {
-  id: string;
-  email: string;
-  username: string;
-  createdAt: string;
-}
+import { User } from './user';
 
 export interface ApiResponse<T> {
   data: T;
   status: number;
   message?: string;
+  error?: string;
 }
 
 export interface PaginatedResponse<T> {
   items: T[];
   total: number;
   page: number;
-  pageSize: number;
-  totalPages: number;
+  size: number;
+  pages: number;
 }
 
 export interface RomFile {
   id: string;
   name: string;
   size: number;
-  format: string;
-  uploadedAt: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  path: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  user?: User;
 }
 
 export interface TranslationProject {
   id: string;
-  romId: string;
-  sourceLanguage: string;
-  targetLanguage: string;
+  name: string;
+  description?: string;
+  source_language: string;
+  target_language: string;
   status: 'pending' | 'in_progress' | 'completed' | 'failed';
   progress: number;
-  createdAt: string;
-  updatedAt: string;
-} 
+  rom_file_id: string;
+  rom_file?: RomFile;
+  user_id: string;
+  user?: User;
+  created_at: string;
+  updated_at: string;
+}
+
+export type { User } from './user';
+export * from './user'; 

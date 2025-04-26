@@ -1,388 +1,280 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
-  Paper,
-  Typography,
-  Button,
+  Card,
+  CardContent,
   Grid,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  LinearProgress,
+  Typography,
   Chip,
-  Tabs,
-  Tab,
-  Container,
-  Tooltip,
-  Divider,
+  LinearProgress,
+  IconButton,
   Stack,
+  Paper,
+  Tooltip,
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import ImageIcon from '@mui/icons-material/Image';
+import LanguageIcon from '@mui/icons-material/Language';
+import PendingIcon from '@mui/icons-material/Pending';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 import Layout from '@/components/layout/Layout';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { api } from '@/services/api';
 
-interface RomTranslation {
-  id: string;
-  name: string;
-  consoleType: string;
-  targetLanguage: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  date: string;
-  estimatedTime?: string;
-  options: {
+interface TranslationJob {
+  id: number;
+  original_filename: string;
+  file_size: number;
+  target_language: string;
+  translation_options: {
     text: boolean;
     audio: boolean;
     image: boolean;
   };
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
-// Mock data - replace with actual API calls
-const mockTranslations: RomTranslation[] = [
-  {
-    id: '1',
-    name: 'Pokemon Emerald.gba',
-    consoleType: 'gba',
-    targetLanguage: 'es',
-    status: 'completed',
-    progress: 100,
-    date: '2023-05-15',
-    estimatedTime: '45 minutes',
-    options: {
-      text: true,
-      audio: false,
-      image: false,
-    },
+const statusConfig = {
+  pending: {
+    color: '#FFA726',
+    bgColor: '#FFF3E0',
+    icon: <PendingIcon fontSize="small" />,
+    label: 'Pending'
   },
-  {
-    id: '2',
-    name: 'Zelda - Minish Cap.gba',
-    consoleType: 'gba',
-    targetLanguage: 'fr',
-    status: 'processing',
-    progress: 45,
-    date: '2023-05-16',
-    estimatedTime: '1 hour',
-    options: {
-      text: true,
-      audio: true,
-      image: false,
-    },
+  processing: {
+    color: '#29B6F6',
+    bgColor: '#E1F5FE',
+    icon: <AutorenewIcon fontSize="small" className="rotating-icon" />,
+    label: 'In Progress'
   },
-  {
-    id: '3',
-    name: 'Super Mario World.sfc',
-    consoleType: 'snes',
-    targetLanguage: 'pt',
-    status: 'queued',
-    progress: 0,
-    date: '2023-05-17',
-    estimatedTime: '30 minutes',
-    options: {
-      text: true,
-      audio: false,
-      image: true,
-    },
+  completed: {
+    color: '#66BB6A',
+    bgColor: '#E8F5E9',
+    icon: <CheckCircleIcon fontSize="small" />,
+    label: 'Completed'
   },
-  {
-    id: '4',
-    name: 'Final Fantasy VI.sfc',
-    consoleType: 'snes',
-    targetLanguage: 'de',
-    status: 'completed',
-    progress: 100,
-    date: '2023-05-18',
-    estimatedTime: '2 hours',
-    options: {
-      text: true,
-      audio: true,
-      image: true,
-    },
-  },
-  {
-    id: '5',
-    name: 'Metroid Fusion.gba',
-    consoleType: 'gba',
-    targetLanguage: 'it',
-    status: 'processing',
-    progress: 75,
-    date: '2023-05-19',
-    estimatedTime: '1 hour',
-    options: {
-      text: true,
-      audio: false,
-      image: false,
-    },
-  },
-  {
-    id: '6',
-    name: 'Chrono Trigger.sfc',
-    consoleType: 'snes',
-    targetLanguage: 'es',
-    status: 'queued',
-    progress: 0,
-    date: '2023-05-20',
-    estimatedTime: '1.5 hours',
-    options: {
-      text: true,
-      audio: true,
-      image: false,
-    },
-  },
-  {
-    id: '7',
-    name: 'Castlevania - Aria of Sorrow.gba',
-    consoleType: 'gba',
-    targetLanguage: 'fr',
-    status: 'completed',
-    progress: 100,
-    date: '2023-05-21',
-    estimatedTime: '50 minutes',
-    options: {
-      text: true,
-      audio: false,
-      image: true,
-    },
-  },
-  {
-    id: '8',
-    name: 'EarthBound.sfc',
-    consoleType: 'snes',
-    targetLanguage: 'pt',
-    status: 'processing',
-    progress: 30,
-    date: '2023-05-22',
-    estimatedTime: '2.5 hours',
-    options: {
-      text: true,
-      audio: true,
-      image: true,
-    },
-  },
-];
+  failed: {
+    color: '#EF5350',
+    bgColor: '#FFEBEE',
+    icon: <ErrorIcon fontSize="small" />,
+    label: 'Failed'
+  }
+};
 
-const TranslationsPage: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
+const TranslationsPage = () => {
+  const [translations, setTranslations] = useState<TranslationJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
+  useEffect(() => {
+    fetchTranslations();
+  }, []);
 
-  const getStatusColor = (status: RomTranslation['status']) => {
-    switch (status) {
-      case 'completed':
-        return 'success';
-      case 'processing':
-        return 'primary';
-      case 'queued':
-        return 'default';
-      case 'failed':
-        return 'error';
-      default:
-        return 'default';
+  const fetchTranslations = async () => {
+    try {
+      const response = await api.get('/api/v1/translations/jobs');
+      setTranslations(response.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to fetch translations:', err);
+      setError('Failed to load translation jobs');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredTranslations = mockTranslations.filter((translation) => {
-    if (tabValue === 0) return true; // All
-    if (tabValue === 1) return translation.status === 'queued';
-    if (tabValue === 2) return translation.status === 'processing';
-    if (tabValue === 3) return translation.status === 'completed';
-    return true;
-  });
+  const formatFileSize = (bytes: number) => {
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    if (bytes === 0) return '0 Byte';
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)).toString());
+    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
     <ProtectedRoute>
       <Layout>
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column',
-          minHeight: '100vh',
-        }}>
-          <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
-            <Grid container spacing={3}>
+        <Box sx={{ flexGrow: 1 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Paper sx={{ p: 4, textAlign: 'center' }} className="retro-border">
+                <Typography variant="h3" component="h1" gutterBottom className="pixel-text">
+                  Translation Jobs
+                </Typography>
+                <Typography variant="body1" paragraph className="pixel-text">
+                  View and manage your ROM translation jobs
+                </Typography>
+              </Paper>
+            </Grid>
+
+            {loading ? (
               <Grid item xs={12}>
-                <Paper sx={{ p: 4, textAlign: 'center' }} className="retro-border">
-                  <Typography variant="h3" component="h1" gutterBottom className="pixel-text">
-                    Translations
+                <LinearProgress />
+              </Grid>
+            ) : error ? (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'error.light' }}>
+                  <Typography color="error">{error}</Typography>
+                </Paper>
+              </Grid>
+            ) : translations.length === 0 ? (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant="h6" className="pixel-text">
+                    No translation jobs yet
                   </Typography>
-                  <Typography variant="body1" paragraph className="pixel-text">
-                    Track your ROM translations and download completed files
+                  <Typography variant="body1" className="pixel-text">
+                    Upload a ROM to start translating
                   </Typography>
                 </Paper>
               </Grid>
-
-              <Grid item xs={12}>
-                <Paper sx={{ p: 2 }} className="retro-border">
-                  <Tabs
-                    value={tabValue}
-                    onChange={handleTabChange}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    centered
-                  >
-                    <Tab label="All" className="pixel-text" />
-                    <Tab label="Queued" className="pixel-text" />
-                    <Tab label="Processing" className="pixel-text" />
-                    <Tab label="Completed" className="pixel-text" />
-                  </Tabs>
-                </Paper>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Paper className="retro-border">
-                  <List>
-                    {filteredTranslations.map((translation, index) => (
-                      <React.Fragment key={translation.id}>
-                        {index > 0 && <Divider />}
-                        <ListItem
-                          sx={{
-                            py: 3,
-                            px: 4,
-                            display: 'flex',
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            alignItems: { xs: 'flex-start', sm: 'center' },
-                            gap: 2,
-                          }}
-                        >
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography variant="h6" className="pixel-text" sx={{ mb: 1 }}>
-                              {translation.name}
+            ) : (
+              translations.map((job) => (
+                <Grid item xs={12} key={job.id}>
+                  <Card className="retro-border">
+                    <CardContent>
+                      <Stack spacing={2}>
+                        {/* Primeira linha: Nome do arquivo e Status */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography variant="h6" className="pixel-text" noWrap>
+                              {job.original_filename}
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ ml: 1 }}
+                              >
+                                ({formatFileSize(job.file_size)})
+                              </Typography>
                             </Typography>
-                            
-                            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
-                              <Chip
-                                label={translation.consoleType.toUpperCase()}
-                                size="small"
-                                color="secondary"
-                                className="pixel-text"
-                              />
-                              <Chip
-                                label={translation.targetLanguage.toUpperCase()}
-                                size="small"
-                                className="pixel-text"
-                              />
-                              <Chip
-                                label={translation.status}
-                                size="small"
-                                color={getStatusColor(translation.status)}
-                                className="pixel-text"
-                              />
-                              {translation.estimatedTime && (
-                                <Chip
-                                  label={`Est. Time: ${translation.estimatedTime}`}
+                          </Box>
+                          <Chip
+                            icon={statusConfig[job.status as keyof typeof statusConfig].icon}
+                            label={statusConfig[job.status as keyof typeof statusConfig].label}
+                            sx={{
+                              backgroundColor: statusConfig[job.status as keyof typeof statusConfig].bgColor,
+                              color: statusConfig[job.status as keyof typeof statusConfig].color,
+                              borderColor: statusConfig[job.status as keyof typeof statusConfig].color,
+                              '& .MuiChip-icon': {
+                                color: 'inherit'
+                              },
+                              fontWeight: 'medium',
+                              border: 1,
+                            }}
+                          />
+                        </Box>
+
+                        {/* Segunda linha: Tags e Botões */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Chip
+                              icon={<LanguageIcon />}
+                              label={job.target_language.toUpperCase()}
+                              size="small"
+                              sx={{
+                                backgroundColor: '#E3F2FD',
+                                color: '#1976D2',
+                                borderColor: '#1976D2',
+                                border: 1,
+                              }}
+                            />
+                            <Chip
+                              icon={<TextFieldsIcon />}
+                              label="Text"
+                              size="small"
+                              sx={{
+                                backgroundColor: job.translation_options.text ? '#E8F5E9' : '#F5F5F5',
+                                color: job.translation_options.text ? '#2E7D32' : '#9E9E9E',
+                                borderColor: job.translation_options.text ? '#2E7D32' : '#9E9E9E',
+                                border: 1,
+                              }}
+                            />
+                            <Chip
+                              icon={<AudiotrackIcon />}
+                              label="Audio"
+                              size="small"
+                              sx={{
+                                backgroundColor: job.translation_options.audio ? '#E8F5E9' : '#F5F5F5',
+                                color: job.translation_options.audio ? '#2E7D32' : '#9E9E9E',
+                                borderColor: job.translation_options.audio ? '#2E7D32' : '#9E9E9E',
+                                border: 1,
+                              }}
+                            />
+                            <Chip
+                              icon={<ImageIcon />}
+                              label="Image"
+                              size="small"
+                              sx={{
+                                backgroundColor: job.translation_options.image ? '#E8F5E9' : '#F5F5F5',
+                                color: job.translation_options.image ? '#2E7D32' : '#9E9E9E',
+                                borderColor: job.translation_options.image ? '#2E7D32' : '#9E9E9E',
+                                border: 1,
+                              }}
+                            />
+                          </Stack>
+                          <Stack direction="row" spacing={1}>
+                            <Tooltip title={job.status !== 'completed' ? 'Available after completion' : 'Download'}>
+                              <span>
+                                <IconButton
                                   size="small"
-                                  variant="outlined"
-                                  className="pixel-text"
-                                />
-                              )}
-                            </Stack>
-
-                            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-                              <Tooltip title="Text Translation">
-                                <Box sx={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: 1,
-                                  color: translation.options.text ? 'primary.main' : 'text.disabled',
-                                }}>
-                                  <TextFieldsIcon fontSize="small" />
-                                  <Typography variant="body2" className="pixel-text">Text</Typography>
-                                </Box>
-                              </Tooltip>
-                              <Tooltip title="Audio Dubbing">
-                                <Box sx={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: 1,
-                                  color: translation.options.audio ? 'primary.main' : 'text.disabled',
-                                }}>
-                                  <AudiotrackIcon fontSize="small" />
-                                  <Typography variant="body2" className="pixel-text">Audio</Typography>
-                                </Box>
-                              </Tooltip>
-                              <Tooltip title="Image Translation">
-                                <Box sx={{ 
-                                  display: 'flex', 
-                                  alignItems: 'center', 
-                                  gap: 1,
-                                  color: translation.options.image ? 'primary.main' : 'text.disabled',
-                                }}>
-                                  <ImageIcon fontSize="small" />
-                                  <Typography variant="body2" className="pixel-text">Image</Typography>
-                                </Box>
-                              </Tooltip>
-                            </Stack>
-
-                            {translation.status === 'processing' && (
-                              <Box sx={{ width: '100%' }}>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={translation.progress}
-                                  sx={{ 
-                                    height: 8, 
-                                    borderRadius: 4,
-                                    backgroundColor: 'rgba(0,0,0,0.1)',
-                                    '& .MuiLinearProgress-bar': {
-                                      borderRadius: 4,
+                                  sx={{
+                                    color: job.status === 'completed' ? '#1976D2' : '#9E9E9E',
+                                    backgroundColor: job.status === 'completed' ? '#E3F2FD' : '#F5F5F5',
+                                    '&:hover': {
+                                      backgroundColor: job.status === 'completed' ? '#BBDEFB' : '#F5F5F5',
                                     }
                                   }}
-                                />
-                                <Typography variant="body2" color="text.secondary" align="right" className="pixel-text" sx={{ mt: 0.5 }}>
-                                  {translation.progress}%
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
-
-                          <Box sx={{ 
-                            display: 'flex',
-                            flexDirection: { xs: 'column', sm: 'row' },
-                            alignItems: 'center',
-                            gap: 2,
-                            minWidth: { xs: '100%', sm: 'auto' }
-                          }}>
-                            <Typography variant="body2" color="text.secondary" className="pixel-text" sx={{ whiteSpace: 'nowrap' }}>
-                              Uploaded: {translation.date}
-                            </Typography>
-                            {translation.status === 'completed' ? (
-                              <Button
-                                variant="contained"
-                                startIcon={<DownloadIcon />}
-                                className="retro-button"
-                                sx={{ whiteSpace: 'nowrap' }}
-                              >
-                                Download ROM
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outlined"
-                                disabled
-                                className="retro-button"
-                                sx={{ whiteSpace: 'nowrap' }}
-                              >
-                                {translation.status === 'processing'
-                                  ? 'In Progress'
-                                  : 'Queued'}
-                              </Button>
-                            )}
-                          </Box>
-                        </ListItem>
-                      </React.Fragment>
-                    ))}
-                  </List>
-                </Paper>
-              </Grid>
-            </Grid>
-          </Container>
+                                  disabled={job.status !== 'completed'}
+                                >
+                                  <DownloadIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                            <Tooltip title={job.status !== 'completed' ? 'Available after completion' : 'Delete'}>
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    color: job.status === 'completed' ? '#D32F2F' : '#9E9E9E',
+                                    backgroundColor: job.status === 'completed' ? '#FFEBEE' : '#F5F5F5',
+                                    '&:hover': {
+                                      backgroundColor: job.status === 'completed' ? '#FFCDD2' : '#F5F5F5',
+                                    }
+                                  }}
+                                  disabled={job.status !== 'completed'}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </Stack>
+                        </Box>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))
+            )}
+          </Grid>
         </Box>
       </Layout>
     </ProtectedRoute>
   );
 };
 
-export default TranslationsPage; 
+export default TranslationsPage;
+
+// Adicione este CSS global ao seu arquivo de estilos
+// .rotating-icon {
+//   animation: spin 2s linear infinite;
+// }
+// @keyframes spin {
+//   100% { transform: rotate(360deg); }
+// } 

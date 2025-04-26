@@ -8,7 +8,7 @@ and provides type-safe access to all settings.
 """
 
 from functools import lru_cache
-from typing import Any, Dict, List, Optional
+from typing import Any, List, Optional
 
 from pydantic import AnyHttpUrl, EmailStr, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict

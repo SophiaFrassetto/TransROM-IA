@@ -20,6 +20,7 @@ import {
   Divider,
   Stack,
   Paper,
+  Alert,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -30,6 +31,8 @@ import AudiotrackIcon from '@mui/icons-material/Audiotrack';
 import ImageIcon from '@mui/icons-material/Image';
 import Layout from '@/components/layout/Layout';
 import { ProtectedRoute } from '../components/ProtectedRoute';
+import { api } from '@/services/api';
+import { useRouter } from 'next/router';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',
@@ -56,35 +59,70 @@ const RomUploader = () => {
   const [targetLanguage, setTargetLanguage] = useState('en');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const [translationOptions, setTranslationOptions] = useState({
     text: true,
     audio: false,
     image: false,
   });
 
+  const router = useRouter();
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setSelectedFile(event.target.files[0]);
+      setError(null);
     }
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      setError('Please select a file first');
+      return;
+    }
 
     setIsUploading(true);
     setUploadProgress(0);
+    setError(null);
 
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsUploading(false);
-          return 100;
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('target_language', targetLanguage);
+    formData.append('translation_options', JSON.stringify({
+      text: translationOptions.text,
+      audio: translationOptions.audio,
+      image: translationOptions.image
+    }));
+
+    try {
+      const response = await api.upload('/api/v1/translations/upload', formData,
+        (progress) => setUploadProgress(progress)
+      );
+
+      if (response.data) {
+        router.push('/translations');
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      const error = err as {
+        response?: {
+          data?: {
+            detail?: Array<{ type: string, loc: string[], msg: string, input: any }> | string
+          }
         }
-        return prev + 10;
-      });
-    }, 500);
+      };
+      setError(
+        Array.isArray(error.response?.data?.detail)
+          ? error.response?.data?.detail[0]?.msg
+          : error.response?.data?.detail ||
+          'An error occurred while uploading the file'
+      );
+      setUploadProgress(0);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleTranslationOptionChange = (option: keyof typeof translationOptions) => {
@@ -132,7 +170,7 @@ const RomUploader = () => {
                         label={`${selectedFile.name} (${(selectedFile.size / 1024 / 1024).toFixed(2)} MB)`}
                         onDelete={() => setSelectedFile(null)}
                         className="retro-border"
-                        sx={{ 
+                        sx={{
                           maxWidth: '100%',
                           '& .MuiChip-label': {
                             overflow: 'hidden',
@@ -197,12 +235,12 @@ const RomUploader = () => {
                           label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <span>Audio Dubbing</span>
-                              <Chip 
-                                label="Coming Soon" 
-                                size="small" 
-                                color="primary" 
+                              <Chip
+                                label="Coming Soon"
+                                size="small"
+                                color="primary"
                                 variant="outlined"
-                                sx={{ 
+                                sx={{
                                   fontSize: '0.7rem',
                                   height: '20px',
                                   '& .MuiChip-label': { px: 1 }
@@ -225,12 +263,12 @@ const RomUploader = () => {
                           label={
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                               <span>Image Translation</span>
-                              <Chip 
-                                label="Coming Soon" 
-                                size="small" 
-                                color="primary" 
+                              <Chip
+                                label="Coming Soon"
+                                size="small"
+                                color="primary"
                                 variant="outlined"
-                                sx={{ 
+                                sx={{
                                   fontSize: '0.7rem',
                                   height: '20px',
                                   '& .MuiChip-label': { px: 1 }
@@ -245,10 +283,10 @@ const RomUploader = () => {
 
                     {isUploading && (
                       <Box sx={{ width: '100%' }}>
-                        <LinearProgress 
-                          variant="determinate" 
+                        <LinearProgress
+                          variant="determinate"
                           value={uploadProgress}
-                          sx={{ 
+                          sx={{
                             height: 8,
                             borderRadius: 4,
                             backgroundColor: 'rgba(0,0,0,0.1)',
@@ -257,9 +295,9 @@ const RomUploader = () => {
                             }
                           }}
                         />
-                        <Typography 
-                          variant="body2" 
-                          color="text.secondary" 
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
                           className="pixel-text"
                           sx={{ mt: 1, textAlign: 'center' }}
                         >
@@ -286,9 +324,9 @@ const RomUploader = () => {
             <Grid item xs={12} md={6}>
               <Card className="retro-border">
                 <CardContent>
-                  <Typography 
-                    variant="h6" 
-                    gutterBottom 
+                  <Typography
+                    variant="h6"
+                    gutterBottom
                     className="pixel-text"
                     sx={{ mb: 3, textAlign: 'center' }}
                   >
@@ -296,20 +334,20 @@ const RomUploader = () => {
                   </Typography>
                   <Stack spacing={3}>
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                      <TextFieldsIcon 
-                        sx={{ 
+                      <TextFieldsIcon
+                        sx={{
                           fontSize: 32,
                           color: translationOptions.text ? 'primary.main' : 'text.secondary',
                           transition: 'color 0.3s ease',
                           mt: 0.5
-                        }} 
+                        }}
                       />
                       <Box>
                         <Typography variant="subtitle1" className="pixel-text">
                           Text Translation
                         </Typography>
                         <Typography variant="body2" color="text.secondary" className="pixel-text">
-                          Translates all in-game text including menus, dialogues, and descriptions. 
+                          Translates all in-game text including menus, dialogues, and descriptions.
                           <br />
                           <strong>Estimated time:</strong> 5-10 minutes per 1000 characters
                         </Typography>
@@ -317,13 +355,13 @@ const RomUploader = () => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                      <AudiotrackIcon 
-                        sx={{ 
+                      <AudiotrackIcon
+                        sx={{
                           fontSize: 32,
                           color: translationOptions.audio ? 'primary.main' : 'text.secondary',
                           transition: 'color 0.3s ease',
                           mt: 0.5
-                        }} 
+                        }}
                       />
                       <Box>
                         <Typography variant="subtitle1" className="pixel-text">
@@ -338,13 +376,13 @@ const RomUploader = () => {
                     </Box>
 
                     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                      <ImageIcon 
-                        sx={{ 
+                      <ImageIcon
+                        sx={{
                           fontSize: 32,
                           color: translationOptions.image ? 'primary.main' : 'text.secondary',
                           transition: 'color 0.3s ease',
                           mt: 0.5
-                        }} 
+                        }}
                       />
                       <Box>
                         <Typography variant="subtitle1" className="pixel-text">
@@ -361,6 +399,12 @@ const RomUploader = () => {
                 </CardContent>
               </Card>
             </Grid>
+
+            {error && (
+              <Grid item xs={12}>
+                <Alert severity="error">{error}</Alert>
+              </Grid>
+            )}
           </Grid>
         </Box>
       </Layout>
