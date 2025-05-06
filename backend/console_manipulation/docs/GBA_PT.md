@@ -1,5 +1,7 @@
 # 📚 Game Boy Advance (GBA) - Guia Técnico de Referência
 
+> :us: [English version](GBA.md)
+
 > **Este documento compila informações essenciais sobre o hardware do Game Boy Advance (GBA), memória, estrutura da ROM, ponteiros, tabelas de caracteres, compressão e mais, com foco em engenharia reversa, tradução e desenvolvimento de ferramentas próprias.**
 
 ---
