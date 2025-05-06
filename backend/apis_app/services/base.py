@@ -11,9 +11,9 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
-from app.core.logging import get_logger
-from app.models.base import BaseModel as DBBaseModel
+from apis_app.core.exceptions import NotFoundError
+from apis_app.core.logging import get_logger
+from apis_app.models.base import BaseModel as DBBaseModel
 
 logger = get_logger(__name__)
 

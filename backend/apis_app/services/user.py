@@ -14,13 +14,13 @@ from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
-from app.core.exceptions import AuthenticationError
-from app.core.logging import get_logger
-from app.database.session import get_async_session
-from app.models.user import User
-from app.schemas.user import UserCreate, UserCreateGoogle, UserResponse, UserUpdate
-from app.services.base import BaseService
+from apis_app.core.config import get_settings
+from apis_app.core.exceptions import AuthenticationError
+from apis_app.core.logging import get_logger
+from apis_app.database.session import get_async_session
+from apis_app.models.user import User
+from apis_app.schemas.user import UserCreate, UserCreateGoogle, UserResponse, UserUpdate
+from apis_app.services.base import BaseService
 
 settings = get_settings()
 logger = get_logger(__name__)

@@ -8,7 +8,7 @@ from typing import Optional
 
 from pydantic import EmailStr, HttpUrl
 
-from app.schemas.base import BaseAPISchema, BaseCreateSchema, BaseUpdateSchema
+from apis_app.schemas.base import BaseAPISchema, BaseCreateSchema, BaseUpdateSchema
 
 
 class UserBase(BaseAPISchema):

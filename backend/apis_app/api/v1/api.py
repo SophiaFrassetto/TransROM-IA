@@ -5,7 +5,7 @@ This module aggregates all API v1 endpoints into a single router.
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, translations, users
+from apis_app.api.v1.endpoints import auth, translations, users
 
 api_router = APIRouter()
 

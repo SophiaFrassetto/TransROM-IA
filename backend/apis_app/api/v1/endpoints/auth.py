@@ -11,13 +11,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
-from app.core.exceptions import AuthenticationError
-from app.core.logging import get_logger
-from app.database.session import get_async_session
-from app.schemas.auth import Token, RefreshTokenRequest
-from app.schemas.user import UserCreateGoogle
-from app.services.user import user_service
+from apis_app.core.config import get_settings
+from apis_app.core.exceptions import AuthenticationError
+from apis_app.core.logging import get_logger
+from apis_app.database.session import get_async_session
+from apis_app.schemas.auth import RefreshTokenRequest, Token
+from apis_app.schemas.user import UserCreateGoogle
+from apis_app.services.user import user_service
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -119,7 +119,10 @@ async def google_auth(
                 logger.error("Google OAuth token error: %s", token_json)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Google OAuth error: {token_json.get('error_description', token_json['error'])}",
+                    detail=(
+                        f"Google OAuth error: "
+                        f"{token_json.get('error_description', token_json['error'])}",
+                    )
                 )
 
             # Get user info from Google
@@ -134,7 +137,10 @@ async def google_auth(
                 logger.error("Google user info error: %s", user_data)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Failed to get user info: {user_data.get('error_description', user_data['error'])}",
+                    detail=(
+                        f"Failed to get user info: "
+                        f"{user_data.get('error_description', user_data['error'])}"
+                    ),
                 )
 
             logger.debug(
@@ -190,7 +196,9 @@ async def refresh_token(
         HTTPException: If refresh token is invalid or expired
     """
     try:
-        user = await user_service.verify_refresh_token(db, refresh_request.refresh_token)
+        user = await user_service.verify_refresh_token(
+            db, refresh_request.refresh_token
+        )
         return Token(
             access_token=user_service.create_access_token(user.id),
             token_type="bearer",

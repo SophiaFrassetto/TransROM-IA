@@ -10,10 +10,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 
-from app.api.v1.api import api_router
-from app.core.config import get_settings
-from app.core.exceptions import setup_exception_handlers
-from app.core.logging import get_logger, setup_logging
+from apis_app.api.v1.api import api_router
+from apis_app.core.config import get_settings
+from apis_app.core.exceptions import setup_exception_handlers
+from apis_app.core.logging import get_logger, setup_logging
 
 # Initialize settings and logging
 settings = get_settings()
