@@ -8,8 +8,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.schemas.user import UserResponse
-from app.services.user import user_service
+from apis_app.schemas.user import UserResponse
+from apis_app.services.user import user_service
 
 router = APIRouter()
 

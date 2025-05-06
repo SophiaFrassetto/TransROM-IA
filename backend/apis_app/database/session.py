@@ -14,8 +14,8 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import DeclarativeBase
 
-from app.core.config import get_settings
-from app.core.logging import get_logger
+from apis_app.core.config import get_settings
+from apis_app.core.logging import get_logger
 
 settings = get_settings()
 logger = get_logger(__name__)
@@ -74,7 +74,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     Example:
         ```python
         from fastapi import Depends
-        from app.database.session import get_async_session
+        from apis_app.database.session import get_async_session
 
         @app.get("/items")
         async def get_items(session: AsyncSession = Depends(get_async_session)):

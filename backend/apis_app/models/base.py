@@ -10,7 +10,7 @@ from typing import Any, Dict
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database.session import Base
+from apis_app.database.session import Base
 
 
 class BaseModel(Base):

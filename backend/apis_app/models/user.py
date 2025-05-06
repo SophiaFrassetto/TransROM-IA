@@ -7,7 +7,7 @@ in the system, supporting both local and Google OAuth authentication.
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import BaseModel
+from apis_app.models.base import BaseModel
 
 
 class User(BaseModel):

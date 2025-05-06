@@ -10,12 +10,12 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.session import get_async_session
-from app.models.translation import TranslationJob
-from app.models.user import User
-from app.schemas.translation import TranslationJob as TranslationJobSchema
-from app.schemas.translation import TranslationOptionsBase
-from app.services.auth import get_current_user
+from apis_app.database.session import get_async_session
+from apis_app.models.translation import TranslationJob
+from apis_app.models.user import User
+from apis_app.schemas.translation import TranslationJob as TranslationJobSchema
+from apis_app.schemas.translation import TranslationOptionsBase
+from apis_app.services.auth import get_current_user
 
 router = APIRouter()
 

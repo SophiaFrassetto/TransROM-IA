@@ -12,8 +12,8 @@ backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
 # Import Base and models
-from app.core.config import get_settings
-from app.models.base import BaseModel
+from apis_app.core.config import get_settings
+from apis_app.models.base import BaseModel
 
 settings = get_settings()
 

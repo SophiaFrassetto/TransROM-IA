@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import BaseModel
+from apis_app.models.base import BaseModel
 
 
 class TranslationJob(BaseModel):
