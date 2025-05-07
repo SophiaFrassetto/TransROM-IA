@@ -221,6 +221,12 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ---
 
+## 📖 Documentação Técnica
+
+Toda a documentação técnica, guias e referências específicas de console estão disponíveis na pasta [backend/console_manipulation/docs](backend/console_manipulation/docs). Inclui tópicos universais de ROM hacking e guias específicos de console (começando pelo GBA).
+
+---
+
 <div align="center">
 Feito com ❤️ pela equipe TransROM-IA
 </div> 
