@@ -47,4 +47,4 @@ export interface TranslationProject {
 }
 
 export type { User } from './user';
-export * from './user'; 
+export * from './user';

@@ -159,4 +159,4 @@ export const theme = createTheme({
   },
 });
 
-export type AppTheme = Theme; 
+export type AppTheme = Theme;

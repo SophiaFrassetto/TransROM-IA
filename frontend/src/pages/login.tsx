@@ -104,43 +104,6 @@ export default function Login() {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleTraditionalLogin} sx={{ mt: 3 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            autoFocus
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign In
-          </Button>
-        </Box>
-
-        <Divider sx={{ width: '100%', my: 2 }}>OR</Divider>
-
         <Button
           fullWidth
           variant="contained"
@@ -159,4 +122,4 @@ export default function Login() {
       </Box>
     </Container>
   );
-} 
+}
