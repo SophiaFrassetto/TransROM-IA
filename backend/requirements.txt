@@ -1,0 +1,5 @@
+# Requisitos para rodar o backend do TransROM-IA
+transformers>=4.30.0
+torch>=1.13.0
+# Dependências padrão do Python 3.8+
+# (dataclasses, typing, pathlib, etc já inclusos no Python moderno) 
