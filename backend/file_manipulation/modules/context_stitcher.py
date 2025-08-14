@@ -1,8 +1,6 @@
-from ..core.base_processor import DataProcessor
-from ..core.enums import ProcessingStage
-from ..utils.decorators import stage_logger, performance_monitor
-from ..datatypes.chunk import Chunk
-from ..datatypes.text_candidate import TextCandidate
+from core.base_processor import DataProcessor
+from datatypes.chunk import Chunk
+from datatypes.text_candidate import TextCandidate
 from typing import List
 
 
@@ -15,9 +13,7 @@ class ContextStitcher(DataProcessor):
     def __init__(self, printable_threshold: float = 0.5):
         self.printable_threshold = printable_threshold
 
-    @stage_logger(ProcessingStage.STITCHING)
-    @performance_monitor
-    def process(self, chunks: List[Chunk]) -> List[TextCandidate]:
+    def process(self, chunks: List[Chunk], task, progress) -> List[TextCandidate]:
         """
         Costura chunks sequenciais que parecem texto para formar candidatos maiores.
         Args:
@@ -25,6 +21,8 @@ class ContextStitcher(DataProcessor):
         Returns:
             Lista de candidatos costurados
         """
+        progress.update(task, total=int(len(chunks)))
+        progress.start_task(task)
         stitched_candidates = []
         i = 0
         while i < len(chunks):
@@ -47,6 +45,7 @@ class ContextStitcher(DataProcessor):
                     )
                 )
                 i = j
+                progress.update(task, advance=1)
             else:
                 i += 1
         return stitched_candidates

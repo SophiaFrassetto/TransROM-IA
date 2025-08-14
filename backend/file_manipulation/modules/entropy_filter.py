@@ -1,6 +1,6 @@
-from ..core.base_filter import QualityFilter
-from ..utils.entropy import EntropyCalculator
-from ..datatypes.text_candidate import TextCandidate
+from core.base_filter import QualityFilter
+from utils.entropy import EntropyCalculator
+from datatypes.text_candidate import TextCandidate
 
 
 class EntropyFilter(QualityFilter):

@@ -1,7 +1,7 @@
 import os
 import shutil
 from datetime import datetime
-from ..datatypes.text_candidate import TextCandidate
+from datatypes.text_candidate import TextCandidate
 from typing import List
 
 

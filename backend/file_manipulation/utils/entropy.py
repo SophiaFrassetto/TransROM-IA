@@ -1,4 +1,3 @@
-from ..utils.decorators import performance_monitor
 from collections import Counter
 import math
 
@@ -8,8 +7,6 @@ class EntropyCalculator:
     Calculadora de entropia de Shannon para dados binários.
     """
 
-    @staticmethod
-    @performance_monitor
     def shannon_entropy(data_slice: bytes) -> float:
         """
         Calcula a Entropia de Shannon para uma fatia de dados em bytes.

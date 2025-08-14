@@ -10,9 +10,9 @@ class PipelineOrchestrator:
     Ideal para integração com API, CLI ou outros sistemas.
     """
 
-    def __init__(self, config: Optional[PipelineConfig] = None):
+    def __init__(self, config: Optional[PipelineConfig] = None, console=None):
         self.config = config or PipelineConfig()
-        self.pipeline = TextExtractionPipeline(self.config)
+        self.pipeline = TextExtractionPipeline(self.config, console)
         # Futuro: permitir múltiplos pipelines, customização dinâmica, etc.
 
     def run(self, filepath: str, extra_args: Optional[Dict[str, Any]] = None):
