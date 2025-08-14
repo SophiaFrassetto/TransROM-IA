@@ -1,7 +1,6 @@
 import argparse
 import os
 from pathlib import Path
-from config.logging_config import setup_logging
 from core.orchestrator import PipelineOrchestrator
 from core.enums import QualityLevel
 from core.base_config import PipelineConfig
@@ -14,8 +13,6 @@ def main():
     """
     CLI principal para rodar o pipeline de extração de texto.
     """
-    # Configuração global de logging
-    setup_logging()
 
     parser = argparse.ArgumentParser(
         description="Pipeline Híbrido de Extração de Texto - TransROM-IA",

@@ -6,7 +6,6 @@ from modules import CompressionRatioFilter
 from datatypes.text_candidate import TextCandidate
 from pathlib import Path
 from typing import List, Optional, Union
-import logging
 
 from rich.progress import (
     BarColumn,
@@ -18,8 +17,6 @@ from rich.progress import (
 )
 
 from rich.panel import Panel
-
-logger = logging.getLogger(__name__)
 
 
 class TextExtractionPipeline:
