@@ -1,20 +1,23 @@
-from ..core.base_config import PipelineConfig
-from ..core.enums import ProcessingStage
-from ..modules.chunkifier import Chunkifier
-from ..modules.context_stitcher import ContextStitcher
-from ..modules.entropy_filter import EntropyFilter
-from ..modules.printable_density_filter import PrintableDensityFilter
-from ..modules.letter_ratio_filter import LetterRatioFilter
-from ..modules.word_structure_filter import WordStructureFilter
-from ..modules.stutter_penalty_filter import StutterPenaltyFilter
-from ..modules.linear_sequence_filter import LinearSequenceFilter
-from ..modules.repeated_block_filter import RepeatedBlockFilter
-from ..modules.low_char_diversity_filter import LowCharDiversityFilter
-from ..modules.dictionary_word_filter import DictionaryWordFilter
-from ..datatypes.text_candidate import TextCandidate
+from core.base_config import PipelineConfig
+from modules import TextBlockExtractor
+from modules import EntropyFilter
+from modules import PrintableRatioFilter
+from modules import CompressionRatioFilter
+from datatypes.text_candidate import TextCandidate
 from pathlib import Path
 from typing import List, Optional, Union
 import logging
+
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TextColumn,
+    TimeRemainingColumn,
+    MofNCompleteColumn,
+    TimeElapsedColumn,
+)
+
+from rich.panel import Panel
 
 logger = logging.getLogger(__name__)
 
@@ -25,34 +28,43 @@ class TextExtractionPipeline:
     Implementa um sistema híbrido que combina análise de entropia, costura de contexto e filtragem inteligente.
     """
 
-    def __init__(self, config: Optional[PipelineConfig] = None):
+    def __init__(self, config: Optional[PipelineConfig] = None, console=None):
         self.config = config or PipelineConfig()
         self._setup_processors()
         self._setup_filters()
 
+        self.console = console
+
+        self.progress = PipelineProgress(
+            TextColumn("[bold blue]{task.description}: {task.fields[filename]}", justify="right"),
+            BarColumn(),
+            "[progress.percentage]{task.percentage:>3.1f}%",
+            "•",
+            TimeRemainingColumn(),
+            "•",
+            TimeElapsedColumn(),
+            "•",
+            MofNCompleteColumn(),
+            console=console
+        )
+
     def _setup_processors(self):
-        self.chunkifier = Chunkifier(self.config.chunk_size)
-        self.stitcher = ContextStitcher(self.config.printable_threshold)
+        self.text_extractor = TextBlockExtractor()
 
     def _setup_filters(self):
         self.filters = [
             EntropyFilter(),
-            PrintableDensityFilter(),
-            LetterRatioFilter(),
-            WordStructureFilter(),
-            StutterPenaltyFilter(),
-            LinearSequenceFilter(),
-            RepeatedBlockFilter(),
-            LowCharDiversityFilter(),
-            DictionaryWordFilter(),
+            PrintableRatioFilter(),
+            CompressionRatioFilter(),
         ]
 
-    def _apply_filters(self, candidates: List[TextCandidate]) -> List[TextCandidate]:
+    def _apply_filters(self, candidates: List[TextCandidate], task) -> List[TextCandidate]:
         """
         Aplica todos os filtros de qualidade aos candidatos.
         Se um candidato atingir um score muito alto (ex: >= 3.5), ele é aprovado diretamente (bypass do NLP).
         """
-        logger.info("Aplicando filtros de qualidade...")
+        self.progress.update(task, total=int(len(candidates)), visible=True)
+        self.progress.start_task(task)
         scored_candidates = []
         for candidate in candidates:
             if not candidate.raw_bytes or len(candidate.raw_bytes) == 0:
@@ -66,9 +78,8 @@ class TextExtractionPipeline:
                 continue
             if total_score >= self.config.min_score_threshold:
                 scored_candidates.append(candidate)
-        logger.info(
-            f"Resultado: {len(scored_candidates)} candidatos sobreviveram à filtragem."
-        )
+            if candidate in scored_candidates:
+                self.progress.update(task, advance=1)
         return scored_candidates
 
     def process_file(self, filepath: Union[str, Path]) -> List[TextCandidate]:
@@ -82,10 +93,20 @@ class TextExtractionPipeline:
         filepath = Path(filepath)
         if not filepath.exists():
             raise FileNotFoundError(f"Arquivo não encontrado: {filepath}")
-        logger.info(f"Iniciando processamento do arquivo: {filepath}")
         with open(filepath, "rb") as f:
             file_data = f.read()
-        chunks = self.chunkifier.process(file_data)
-        stitched_candidates = self.stitcher.process(chunks)
-        final_candidates = self._apply_filters(stitched_candidates)
-        return final_candidates
+        with self.progress:
+
+            task_text_extractor = self.progress.add_task("Text Extractor", filename=filepath.stem, start=False, visible=False)
+            task_apply_filters = self.progress.add_task("apply_filters", filename=filepath.stem, start=False, visible=False)
+
+            text_blocks = self.text_extractor.process(file_data, task_text_extractor, self.progress)
+
+            final_candidates = self._apply_filters(text_blocks, task_apply_filters)
+
+            return final_candidates
+
+
+class PipelineProgress(Progress):
+    def get_renderables(self):
+        yield Panel(self.make_tasks_table(self.tasks), title="[red]Pipeline")

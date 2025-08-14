@@ -1,3 +1,0 @@
-# Backend: API
-
-(Em breve) 
