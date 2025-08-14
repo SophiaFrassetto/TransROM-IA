@@ -5,7 +5,7 @@ from config.logging_config import setup_logging
 from core.orchestrator import PipelineOrchestrator
 from core.enums import QualityLevel
 from core.base_config import PipelineConfig
-from modules.output_formatter import OutputFormatter
+from modules import OutputFormatter
 from rich.console import Console
 from rich.table import Table
 
@@ -88,7 +88,7 @@ def main():
 
 
     base_name = args.filepath
-    suffix = f"_{args.quality}_no_NLP"
+    suffix = f"_{args.quality}"
     OutputFormatter.save_results(
         candidates, base_name=base_name, suffix=suffix, output_dir=output_dir
     )

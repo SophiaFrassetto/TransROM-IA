@@ -1,7 +1,8 @@
 from core.base_config import PipelineConfig
-from modules.chunkifier import Chunkifier
-from modules.context_stitcher import ContextStitcher
-from modules.entropy_filter import EntropyFilter
+from modules import TextBlockExtractor
+from modules import EntropyFilter
+from modules import PrintableRatioFilter
+from modules import CompressionRatioFilter
 from datatypes.text_candidate import TextCandidate
 from pathlib import Path
 from typing import List, Optional, Union
@@ -48,12 +49,13 @@ class TextExtractionPipeline:
         )
 
     def _setup_processors(self):
-        self.chunkifier = Chunkifier(self.config.chunk_size)
-        self.stitcher = ContextStitcher(self.config.printable_threshold)
+        self.text_extractor = TextBlockExtractor()
 
     def _setup_filters(self):
         self.filters = [
             EntropyFilter(),
+            PrintableRatioFilter(),
+            CompressionRatioFilter(),
         ]
 
     def _apply_filters(self, candidates: List[TextCandidate], task) -> List[TextCandidate]:
@@ -61,7 +63,7 @@ class TextExtractionPipeline:
         Aplica todos os filtros de qualidade aos candidatos.
         Se um candidato atingir um score muito alto (ex: >= 3.5), ele é aprovado diretamente (bypass do NLP).
         """
-        self.progress.update(task, total=int(len(candidates)))
+        self.progress.update(task, total=int(len(candidates)), visible=True)
         self.progress.start_task(task)
         scored_candidates = []
         for candidate in candidates:
@@ -95,14 +97,12 @@ class TextExtractionPipeline:
             file_data = f.read()
         with self.progress:
 
-            task_chunkifier = self.progress.add_task("chunkifier", filename=filepath.stem, start=False)
-            task_stitcher = self.progress.add_task("stitcher", filename=filepath.stem, start=False)
-            task_apply_filters = self.progress.add_task("apply_filters", filename=filepath.stem, start=False)
+            task_text_extractor = self.progress.add_task("Text Extractor", filename=filepath.stem, start=False, visible=False)
+            task_apply_filters = self.progress.add_task("apply_filters", filename=filepath.stem, start=False, visible=False)
 
+            text_blocks = self.text_extractor.process(file_data, task_text_extractor, self.progress)
 
-            chunks = self.chunkifier.process(file_data, task_chunkifier, self.progress)
-            stitched_candidates = self.stitcher.process(chunks, task_stitcher, self.progress)
-            final_candidates = self._apply_filters(stitched_candidates, task_apply_filters)
+            final_candidates = self._apply_filters(text_blocks, task_apply_filters)
 
             return final_candidates
 
