@@ -5,11 +5,9 @@ from rich.progress import (
     BarColumn,
     Progress,
     TextColumn,
-    TimeRemainingColumn,
     SpinnerColumn,
     TimeElapsedColumn,
 )
-from rich.live import Live
 
 
 class TextBlockExtractor(DataProcessor):
@@ -56,51 +54,50 @@ class TextBlockExtractor(DataProcessor):
         candidates = []
         is_in_text_block = False
         start_index = 0  # Uma janela pequena para detectar transições
-        with Live(screen=False, vertical_overflow="visible"):
-            with self.progress:
-                task = self.progress.add_task(
-                    "Extract Text Candidates...", start=False, visible=False, total=None
+        with self.progress:
+            task = self.progress.add_task(
+                "Extract Text Candidates...", start=False, visible=False, total=None
+            )
+            self.progress.update(task, candidates=0, visible=True)
+            self.progress.start_task(task)
+
+            for i in range(len(data) - self.window_size):
+                window = data[i : i + self.window_size]
+                score = self._get_text_likeness_score(window)
+
+                if not is_in_text_block and score >= self.text_likeness_threshold:
+                    # Início de um possível bloco de texto
+                    is_in_text_block = True
+                    start_index = i
+
+                elif is_in_text_block and score < self.text_likeness_threshold:
+                    # Fim do bloco de texto
+                    is_in_text_block = False
+                    end_index = i
+
+                    # Adiciona o bloco se ele tiver um tamanho mínimo
+                    if (end_index - start_index) >= self.min_block_size:
+                        candidate = TextCandidate(
+                            start_offset=start_index,
+                            end_offset=end_index,
+                            raw_bytes=data[start_index:end_index],
+                        )
+                        candidate.quality_score = score
+                        candidates.append(candidate)
+                self.progress.update(task, candidates=len(candidates))
+
+            # Caso o arquivo termine dentro de um bloco de texto
+            if is_in_text_block and (len(data) - start_index) >= self.min_block_size:
+                candidate = TextCandidate(
+                    start_offset=start_index,
+                    end_offset=end_index,
+                    raw_bytes=data[start_index:end_index],
                 )
-                self.progress.update(task,candidates=0, visible=True)
-                self.progress.start_task(task)
-
-                for i in range(len(data) - self.window_size):
-                    window = data[i : i + self.window_size]
-                    score = self._get_text_likeness_score(window)
-
-                    if not is_in_text_block and score >= self.text_likeness_threshold:
-                        # Início de um possível bloco de texto
-                        is_in_text_block = True
-                        start_index = i
-
-                    elif is_in_text_block and score < self.text_likeness_threshold:
-                        # Fim do bloco de texto
-                        is_in_text_block = False
-                        end_index = i
-
-                        # Adiciona o bloco se ele tiver um tamanho mínimo
-                        if (end_index - start_index) >= self.min_block_size:
-                            candidate = TextCandidate(
-                                start_offset=start_index,
-                                end_offset=end_index,
-                                raw_bytes=data[start_index:end_index],
-                            )
-                            candidate.quality_score = score
-                            candidates.append(candidate)
-                    self.progress.update(task, candidates=len(candidates))
-
-                # Caso o arquivo termine dentro de um bloco de texto
-                if is_in_text_block and (len(data) - start_index) >= self.min_block_size:
-                    candidate = TextCandidate(
-                        start_offset=start_index,
-                        end_offset=end_index,
-                        raw_bytes=data[start_index:end_index],
-                    )
-                    candidate.quality_score = score
-                    candidates.append(candidate)
-                    self.progress.update(task, candidates=len(candidates))
+                candidate.quality_score = score
+                candidates.append(candidate)
+                self.progress.update(task, candidates=len(candidates))
 
 
-                self.progress.update(task, total=100, completed=100)
-                self.progress.stop_task(task)
-                return candidates
+            self.progress.update(task, total=100, completed=100)
+            self.progress.stop_task(task)
+            return candidates

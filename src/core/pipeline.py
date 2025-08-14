@@ -6,6 +6,13 @@ from modules import CompressionRatioFilter
 from datatypes.text_candidate import TextCandidate
 from pathlib import Path
 from typing import List, Optional
+from rich.progress import (
+    BarColumn,
+    Progress,
+    TextColumn,
+    SpinnerColumn,
+    TimeElapsedColumn,
+)
 
 
 class TextExtractionPipeline:
@@ -18,6 +25,20 @@ class TextExtractionPipeline:
         self.config = config or PipelineConfig()
         self._setup_processors()
         self._setup_filters()
+
+        self.progress = Progress(
+            SpinnerColumn(spinner_name='dots'),
+            TextColumn(
+                "[bold blue]{task.description}",
+                justify="right",
+            ),
+            BarColumn(),
+            "[progress.percentage]{task.percentage:>3.1f}%",
+            "•",
+            TimeElapsedColumn(),
+            "•",
+            "Candidates: {task.fields[candidates]}/{task.total}",
+        )
 
     def _setup_processors(self):
         self.text_extractor = TextBlockExtractor(
@@ -47,29 +68,35 @@ class TextExtractionPipeline:
         Aplica todos os filtros de qualidade aos candidatos.
         Se um candidato atingir um score muito alto (ex: >= 3.5), ele é aprovado diretamente (bypass do NLP).
         """
-        # self.progress.update(task, total=int(len(candidates)), visible=True)
-        # self.progress.start_task(task)
+        with self.progress:
+            task = self.progress.add_task(
+                "Pipeline Execution...", start=False, visible=False, total=len(candidates)
+            )
+            self.progress.update(task, candidates=0, visible=True)
+            self.progress.start_task(task)
 
-        scored_candidates = []
-        for candidate in candidates:
-            if not candidate.raw_bytes or len(candidate.raw_bytes) == 0:
-                continue
+            scored_candidates = []
+            for candidate in candidates:
+                if not candidate.raw_bytes or len(candidate.raw_bytes) == 0:
+                    continue
 
-            total_score = 0.0
-            for filter_obj in self.filters:
-                total_score += filter_obj.filter(candidate)
-            candidate.quality_score = total_score
+                total_score = 0.0
+                for filter_obj in self.filters:
+                    total_score += filter_obj.filter(candidate)
+                candidate.quality_score = total_score
 
-            if total_score >= 3.5:
-                scored_candidates.append(candidate)
-                continue
+                if total_score >= 3.5:
+                    scored_candidates.append(candidate)
+                    continue
 
-            if total_score >= self.config.min_score_threshold:
-                scored_candidates.append(candidate)
+                if total_score >= self.config.min_score_threshold:
+                    scored_candidates.append(candidate)
 
-            # if candidate in scored_candidates:
-            #     self.progress.update(task, advance=1)
-        return scored_candidates
+                if candidate in scored_candidates:
+                    self.progress.update(task, advance=1, candidates=len(scored_candidates))
+
+            self.progress.stop_task(task)
+            return scored_candidates
 
     def process_file(self, filepath: Path) -> List[TextCandidate]:
         """

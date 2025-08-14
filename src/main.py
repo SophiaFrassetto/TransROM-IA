@@ -50,7 +50,7 @@ def main():
     candidates = orchestrator.run(args.filepath)
 
     OutputFormatter.save_results(
-        candidates, base_name=args.filepath, suffix=f"_{args.quality_level}", output_dir=(args.output)
+        candidates, base_name=args.filepath, suffix=f"_{args.quality_level.value}", output_dir=(args.output)
     )
 
 
