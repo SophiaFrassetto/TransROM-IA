@@ -61,7 +61,7 @@ class TextBlockExtractor(DataProcessor):
             self.progress.update(task, candidates=0, visible=True)
             self.progress.start_task(task)
 
-            for i in range(len(data) - self.window_size):
+            for i in self.progress.track(range(len(data) - self.window_size), task_id=task):
                 window = data[i : i + self.window_size]
                 score = self._get_text_likeness_score(window)
 
@@ -98,6 +98,5 @@ class TextBlockExtractor(DataProcessor):
                 self.progress.update(task, candidates=len(candidates))
 
 
-            self.progress.update(task, total=100, completed=100)
             self.progress.stop_task(task)
             return candidates

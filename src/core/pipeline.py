@@ -33,11 +33,9 @@ class TextExtractionPipeline:
                 justify="right",
             ),
             BarColumn(),
-            "[progress.percentage]{task.percentage:>3.1f}%",
-            "•",
             TimeElapsedColumn(),
             "•",
-            "Candidates: {task.fields[candidates]}/{task.total}",
+            "Final Candidates: {task.fields[candidates]}/{task.fields[total_candidates]}",
         )
 
     def _setup_processors(self):
@@ -70,13 +68,13 @@ class TextExtractionPipeline:
         """
         with self.progress:
             task = self.progress.add_task(
-                "Pipeline Execution...", start=False, visible=False, total=len(candidates)
+                "Pipeline Execution...", start=False, visible=False
             )
-            self.progress.update(task, candidates=0, visible=True)
+            self.progress.update(task, candidates=0, total_candidates=len(candidates), visible=True)
             self.progress.start_task(task)
 
             scored_candidates = []
-            for candidate in candidates:
+            for candidate in self.progress.track(candidates, task_id=task):
                 if not candidate.raw_bytes or len(candidate.raw_bytes) == 0:
                     continue
 
@@ -93,7 +91,7 @@ class TextExtractionPipeline:
                     scored_candidates.append(candidate)
 
                 if candidate in scored_candidates:
-                    self.progress.update(task, advance=1, candidates=len(scored_candidates))
+                    self.progress.update(task, candidates=len(scored_candidates))
 
             self.progress.stop_task(task)
             return scored_candidates
@@ -113,7 +111,6 @@ class TextExtractionPipeline:
             file_data = f.read()
 
         text_blocks = self.text_extractor.process(file_data)
-
         final_candidates = self._apply_filters(text_blocks)
 
         return final_candidates
