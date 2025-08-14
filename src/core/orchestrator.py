@@ -1,5 +1,5 @@
 from .pipeline import TextExtractionPipeline
-from .base_config import PipelineConfig
+from config.pipeline_config import PipelineConfig
 from typing import Optional, Dict, Any
 
 
@@ -10,9 +10,9 @@ class PipelineOrchestrator:
     Ideal para integração com API, CLI ou outros sistemas.
     """
 
-    def __init__(self, config: Optional[PipelineConfig] = None, console=None):
+    def __init__(self, config: Optional[PipelineConfig] = None):
         self.config = config or PipelineConfig()
-        self.pipeline = TextExtractionPipeline(self.config, console)
+        self.pipeline = TextExtractionPipeline(self.config)
         # Futuro: permitir múltiplos pipelines, customização dinâmica, etc.
 
     def run(self, filepath: str, extra_args: Optional[Dict[str, Any]] = None):

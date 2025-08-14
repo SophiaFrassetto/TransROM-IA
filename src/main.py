@@ -1,57 +1,15 @@
-import argparse
 import os
 from pathlib import Path
 from core.orchestrator import PipelineOrchestrator
-from core.enums import QualityLevel
-from core.base_config import PipelineConfig
+from config.pipeline_config import PipelineConfig
 from utils.output_formatter import OutputFormatter
 from rich.console import Console
 from rich.table import Table
 
+from config import get_args
 
-def main():
-    """
-    CLI principal para rodar o pipeline de extração de texto.
-    """
 
-    parser = argparse.ArgumentParser(
-        description="Pipeline Híbrido de Extração de Texto - TransROM-IA",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument(
-        "filepath", help="Caminho para o arquivo binário a ser analisado"
-    )
-    parser.add_argument(
-        "--quality",
-        "-q",
-        choices=["low", "medium", "high", "ultra"],
-        default="medium",
-        help="Nível de qualidade para filtragem (padrão: medium)",
-    )
-
-    console = Console()
-
-    args = parser.parse_args()
-
-    # Normaliza o caminho do arquivo para evitar problemas de path
-    args.filepath = os.path.abspath(os.path.normpath(args.filepath))
-    filepath = Path(args.filepath)
-
-    # Cria a pasta de saída se não existir
-    output_dir = os.path.join(os.path.dirname(__file__), "..", "output")
-    output_dir = os.path.abspath(output_dir)
-    os.makedirs(output_dir, exist_ok=True)
-
-    quality_map = {
-        "low": QualityLevel.LOW,
-        "medium": QualityLevel.MEDIUM,
-        "high": QualityLevel.HIGH,
-        "ultra": QualityLevel.ULTRA,
-    }
-    config = PipelineConfig(
-        quality_level=quality_map[args.quality]
-    )
-
+def generate_initial_table(args, console):
     table = Table(show_header=True, header_style="bold magenta", title="TransRomIA")
     table.add_column("Rom")
     table.add_column("Directory")
@@ -61,25 +19,40 @@ def main():
     table.add_column("Quality")
 
     table.add_row(
-        str(filepath.stem),
-        str(filepath.parent.absolute()),
-        str(filepath.suffix),
-        f"{filepath.stat().st_size} B",
-        str(output_dir),
-        str(quality_map[args.quality].value),
+        str(args.filepath.stem),
+        str(args.filepath.parent.absolute()),
+        str(args.filepath.suffix),
+        f"{args.filepath.stat().st_size} B",
+        str(args.output),
+        str(args.quality_level.value),
     )
 
     console.print(table)
 
-    orchestrator = PipelineOrchestrator(config, console)
+
+def main():
+    """
+    CLI principal para rodar o pipeline de extração de texto.
+    """
+    args = get_args()
+    config = PipelineConfig(
+        min_printable_ratio = args.min_printable_ratio,
+        min_score_threshold = args.min_score_threshold,
+        max_compression_ratio = args.max_compression_ratio,
+        min_entropy = args.min_entropy,
+        max_entropy = args.max_entropy,
+        quality_level = args.quality_level
+    )
+
+    generate_initial_table(args, config.console)
+
+    orchestrator = PipelineOrchestrator(config)
     candidates = orchestrator.run(args.filepath)
 
-
-    base_name = args.filepath
-    suffix = f"_{args.quality}"
     OutputFormatter.save_results(
-        candidates, base_name=base_name, suffix=suffix, output_dir=output_dir
+        candidates, base_name=args.filepath, suffix=f"_{args.quality_level}", output_dir=(args.output)
     )
+
 
 if __name__ == "__main__":
     main()
