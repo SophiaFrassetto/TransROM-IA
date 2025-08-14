@@ -31,13 +31,6 @@ def main():
         default="medium",
         help="Nível de qualidade para filtragem (padrão: medium)",
     )
-    parser.add_argument(
-        "--chunk-size",
-        "-c",
-        type=int,
-        default=32,
-        help="Tamanho dos chunks em bytes (padrão: 32)",
-    )
 
     console = Console()
 
@@ -59,7 +52,7 @@ def main():
         "ultra": QualityLevel.ULTRA,
     }
     config = PipelineConfig(
-        chunk_size=args.chunk_size, quality_level=quality_map[args.quality]
+        quality_level=quality_map[args.quality]
     )
 
     table = Table(show_header=True, header_style="bold magenta", title="TransRomIA")
@@ -69,7 +62,6 @@ def main():
     table.add_column("Size")
     table.add_column("Output Directory")
     table.add_column("Quality")
-    table.add_column("Chunk Size")
 
     table.add_row(
         str(filepath.stem),
@@ -78,7 +70,6 @@ def main():
         f"{filepath.stat().st_size} B",
         str(output_dir),
         str(quality_map[args.quality].value),
-        str(args.chunk_size),
     )
 
     console.print(table)

@@ -9,7 +9,6 @@ class PipelineConfig:
     Permite ajustar chunk_size, thresholds e nível de qualidade.
     """
 
-    chunk_size: int = 32
     printable_threshold: float = 0.5
     min_score_threshold: float = 2.0
     quality_level: QualityLevel = QualityLevel.MEDIUM
