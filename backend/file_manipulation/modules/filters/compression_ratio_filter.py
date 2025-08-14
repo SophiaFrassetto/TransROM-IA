@@ -1,4 +1,4 @@
-from core.base_filter import QualityFilter
+from .base_filter import QualityFilter
 from datatypes.text_candidate import TextCandidate
 import zlib
 

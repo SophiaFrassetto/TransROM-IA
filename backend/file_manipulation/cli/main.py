@@ -5,7 +5,7 @@ from config.logging_config import setup_logging
 from core.orchestrator import PipelineOrchestrator
 from core.enums import QualityLevel
 from core.base_config import PipelineConfig
-from modules import OutputFormatter
+from utils.output_formatter import OutputFormatter
 from rich.console import Console
 from rich.table import Table
 

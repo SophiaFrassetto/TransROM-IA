@@ -4,6 +4,5 @@ from .filters import (
     PrintableRatioFilter,
 )
 from .processors import (
-    OutputFormatter,
     TextBlockExtractor,
 )

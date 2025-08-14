@@ -1,5 +1,5 @@
 import string
-from core.base_processor import DataProcessor
+from .base_processor import DataProcessor
 from datatypes.text_candidate import TextCandidate
 
 
