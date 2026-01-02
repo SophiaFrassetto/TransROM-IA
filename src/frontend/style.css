@@ -1,0 +1,33 @@
+body {
+    background: #f4f6f8;
+}
+
+.hex-container {
+    max-height: 80vh;
+    overflow: auto;
+}
+
+#hex td.offset {
+    background-color: #e5e7eb !important;
+}
+
+#hex td.byte {
+    background-color: #ffffff !important;
+}
+
+#hex td.ascii-cell {
+    background-color: #fff4dd !important;
+}
+
+.selected {
+    outline: 2px solid #6366f1;
+    background: #c7d2fe !important;
+}
+
+#hex td,
+#hex th {
+    font-family: monospace;
+    font-size: 12px;
+    text-align: center;
+    padding: 2px 2px;
+}

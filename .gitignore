@@ -210,4 +210,4 @@ Thumbs.db
 
 #Roms
 roms/
-output/
+src/backend/uploads/**
