@@ -1,51 +1,94 @@
-use std::{fs::{File, Metadata}, io::{Read,Error}, path::Path, ops::Range};
-use memmap2::Mmap;
+use std::{path::PathBuf, fs::read, io::Result};
+// use memmap2::Mmap;
+
+pub trait RomFamily {
+    fn name(&self) -> &'static str;
+    fn header(&self) -> &'static [RomBinaryField];
+}
+
+pub struct Gba;
+
+impl Gba {
+    pub const HEADER: &'static [RomBinaryField] = &[
+        GbaRomHeader::HEADER,
+        GbaRomHeader::ENTRY_POINT,
+        GbaRomHeader::NINTENDO_LOGO,
+        GbaRomHeader::GAME_TITLE,
+        GbaRomHeader::GAME_CODE,
+        GbaRomHeader::GAME_CODE_U,
+        GbaRomHeader::GAME_CODE_TT,
+        GbaRomHeader::GAME_CODE_D,
+        GbaRomHeader::MAKER_CODE,
+        GbaRomHeader::FIXED_VALUE,
+        GbaRomHeader::MAIN_UNIT_CODE,
+        GbaRomHeader::DEVICE_TYPE,
+        GbaRomHeader::FIRST_RESERVED_AREA,
+        GbaRomHeader::SOFTWARE_VERSION,
+        GbaRomHeader::COMPLEMENT_CHECK,
+        GbaRomHeader::SECOND_RESERVED_AREA,
+        GbaRomHeader::RAM_ENTRY_POINT,
+        GbaRomHeader::BOOT_MODE,
+        GbaRomHeader::SLAVE_ID_NUMBER,
+        GbaRomHeader::NOT_USED,
+        GbaRomHeader::JOYBUS_ENTRY_POINT,
+    ];
+}
+
+impl RomFamily for Gba {
+    fn name(&self) -> &'static str {
+        "Game Boy Advance"
+    }
+
+    fn header(&self) -> &'static [RomBinaryField] {
+        Self::HEADER
+    }
+}
+
+
+pub struct Rom<F: RomFamily> {
+    pub name: String,
+    pub path: PathBuf,
+    pub family: F,
+    pub buffer: Vec<u8>,
+}
+
+impl <F: RomFamily> Rom<F> {
+    pub fn read_field(&self, field: &RomBinaryField) -> &[u8] {
+        let start = field.offset;
+        let end = start + field.size;
+        &self.buffer[start..end]
+    }
+}
+
+impl<F: RomFamily> Rom<F> {
+    pub fn load_buffer(&mut self) -> Result<()> {
+        self.buffer = read(&self.path)?;
+        Ok(())
+    }
+}
+
+impl<F: RomFamily> Rom<F> {
+    pub fn load(name: impl Into<String>, path: impl Into<PathBuf>, family: F) -> Result<Self> {
+        let mut rom = Rom {
+            name: name.into(),
+            path: path.into(),
+            family,
+            buffer: Vec::new(),
+        };
+
+        rom.load_buffer()?;
+        Ok(rom)
+    }
+}
 
 pub struct RomBinaryField {
     pub offset: usize,
     pub size: usize,
     pub name: &'static str,
-    pub required: &'static bool,
+    pub required: bool,
 }
 
-pub struct Rom {
-    pub name: &'static str,
-    pub path: &Path,
-    pub size: u64,
-    pub buffer: Vec[u8]
-    pub mmap:  Mmap,
-}
-
-impl Rom {
-    fn size(&self) -> Result<u64, Error> {
-        let file = File::open(self.path)?;
-        let metadata:Metadata = f.metadata()?;
-        Ok(metadata.len())
-    }
-
-    fn buffer(&self, offset_range: Range<usize>) {
-        if !self.buffer {
-            self.buffer = Vec::new();
-            file.read_to_end(&mut self.buffer)?;
-        }
-
-        if offset_range {
-            return self.buffer[offset_range]
-        }
-
-        return self.buffer;
-    }
-
-    fn mmap(&self) {
-        if !self.mmap {
-            let file = File::open(self.path)?;
-            self.mmap = unsafe { Mmap::map(&file)?  };
-        }
-        return self.mmap;
-    }
-}
-
-struct GbaRomHeader;
+pub struct GbaRomHeader;
 
 impl GbaRomHeader {
     // DOCUMENTATION: https://problemkaputt.de/gbatek.htm#gbacartridgeheader
@@ -57,7 +100,7 @@ impl GbaRomHeader {
         size: 192,
         name: "GBA Complete Header",
         required: false
-    }
+    };
 
     // 000h | 4 | ROM Entry Point | (32bit ARM branch opcode, eg. "B rom_start")
     pub const ENTRY_POINT:  RomBinaryField = RomBinaryField {
@@ -65,7 +108,7 @@ impl GbaRomHeader {
         size: 4,
         name: "Entry Point",
         required: false
-    }
+    };
 
     // 004h | 156 | Nintendo Logo | (compressed bitmap, required!)
     pub const NINTENDO_LOGO:  RomBinaryField = RomBinaryField {
@@ -73,7 +116,7 @@ impl GbaRomHeader {
         size: 156,
         name: "Entry Point",
         required: true
-    }
+    };
 
     // 0A0h | 12 | Game Title | (uppercase ascii, max 12 characters, padded with 00h (if less than 12 chars))
     pub const GAME_TITLE: RomBinaryField = RomBinaryField {
@@ -81,7 +124,7 @@ impl GbaRomHeader {
         size: 12,
         name: "Game Title",
         required: false
-    }
+    };
 
     // 0ACh | 4 | Game Code | (uppercase ascii, 4 characters)
     // cartridges (excluding the leading "AGB-" part).
@@ -109,28 +152,28 @@ impl GbaRomHeader {
         size: 4,
         name: "Game Code",
         required: false
-    }
+    };
     // U  Unique Code          (usually "A" or "B" or special meaning)
     pub const GAME_CODE_U: RomBinaryField = RomBinaryField {
         offset: 0xAC,
         size: 1,
         name: "Unique Code (U)",
         required: false
-    }
+    };
     // TT Short Title          (eg. "PM" for Pac Man)
     pub const GAME_CODE_TT: RomBinaryField = RomBinaryField {
         offset: 0xAD,
         size: 2,
         name: "Short Title (TT)",
         required: false
-    }
+    };
     // D  Destination/Language (usually "J" or "E" or "P" or specific language)
     pub const GAME_CODE_D: RomBinaryField = RomBinaryField {
         offset: 0xAF,
         size: 1,
         name: "Destination/Language (D)",
         required: false
-    }
+    };
 
     // 0B0h | 2 | Maker Code | (uppercase ascii, 2 characters, Identifies the (commercial) developer. For example, "01"=Nintendo)
     pub const MAKER_CODE: RomBinaryField = RomBinaryField {
@@ -138,7 +181,7 @@ impl GbaRomHeader {
         size: 2,
         name: "Maker Code",
         required: false
-    }
+    };
 
     // 0B2h | 1 | Fixed value | (must be 96h, required!)
     pub const FIXED_VALUE: RomBinaryField = RomBinaryField {
@@ -146,7 +189,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Fixed value",
         required: true
-    }
+    };
 
     // 0B3h | 1 | Main unit code | (00h for current GBA models, Identifies the required hardware. Should be 00h for current GBA models.)
     pub const MAIN_UNIT_CODE: RomBinaryField = RomBinaryField {
@@ -154,7 +197,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Main unit code",
         required: false
-    }
+    };
 
     // 0B4h | 1 | Device type | (usually 00h) (bit7=DACS/debug related)
     // Normally, this entry should be zero. With Nintendo's hardware debugger Bit 7 identifies
@@ -166,7 +209,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Device type",
         required: false
-    }
+    };
 
     // 0B5h | 7 | Reserved Area | (should be zero filled)
     pub const FIRST_RESERVED_AREA: RomBinaryField = RomBinaryField {
@@ -174,7 +217,7 @@ impl GbaRomHeader {
         size: 7,
         name: "Reserved Area",
         required: false
-    }
+    };
 
     // 0BCh | 1 | Software version | (usually 00h)
     pub const SOFTWARE_VERSION: RomBinaryField = RomBinaryField {
@@ -182,7 +225,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Software version",
         required: false
-    }
+    };
 
     // 0BDh | 1 | Complement check | (header checksum, required!)
     // Header checksum, cartridge won't work if incorrect. Calculate as such:
@@ -192,7 +235,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Complement check",
         required: true
-    }
+    };
 
     // 0BEh | 2 | Reserved Area | (should be zero filled)
     // Below required for Multiboot/slave programs only. For Multiboot,
@@ -205,7 +248,7 @@ impl GbaRomHeader {
         size: 2,
         name: "Reserved Area",
         required: false
-    }
+    };
 
     // --- Additional Multiboot Header Entries ---
 
@@ -217,7 +260,7 @@ impl GbaRomHeader {
         size: 4,
         name: "RAM Entry Point",
         required: false
-    }
+    };
 
     // 0C4h | 1 | Boot mode (BYTE) | (init as 00h - BIOS overwrites this value!)
     // The slave GBA download procedure overwrites this byte by a value which is indicating the used multiboot transfer mode.
@@ -232,7 +275,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Boot mode",
         required: false
-    }
+    };
 
     // 0C5h | 1 | Slave ID Number (BYTE) | (init as 00h - BIOS overwrites this value!)
     // If the GBA has been booted in Normal or Multiplay mode, this byte becomes overwritten by the slave ID number of the local GBA (that'd be always 01h for normal mode).
@@ -247,7 +290,7 @@ impl GbaRomHeader {
         size: 1,
         name: "Slave ID Number",
         required: false
-    }
+    };
 
     // 0C6h | 26 | Not used | (seems to be unused)
     pub const NOT_USED: RomBinaryField = RomBinaryField {
@@ -255,7 +298,7 @@ impl GbaRomHeader {
         size: 26,
         name: "Not used",
         required: false
-    }
+    };
 
     // 0E0h | 4 | JOYBUS Entry Pt. | (32bit ARM branch opcode, eg. "B joy_start")
     // If the GBA has been booted by using Joybus transfer mode, then the entry point is located at this address rather than at 20000C0h.
@@ -266,14 +309,22 @@ impl GbaRomHeader {
         size: 4,
         name: "JOYBUS Entry Pt.",
         required: false
-    }
+    };
 }
 
 fn main() {
 
-    let zelda: Rom = Rom{
-        name: "Legend of Zelda, The - The Minish Cap (USA)",
-        path: Path::new("./roms/Legend of Zelda, The - The Minish Cap (USA).gba")
-    }
+    let zelda = match Rom::load(
+        "Legend of Zelda - Minish Cap",
+        "./roms/Legend of Zelda, The - The Minish Cap (USA).gba",
+        Gba,
+    ) {
+        Ok(rom) => rom,
+        Err(e) => {println!("Error on load rom {}", e); return;},
+    };
 
+    let title_bytes = zelda.read_field(&GbaRomHeader::GAME_TITLE);
+
+
+    println!("Game Title {:?}", title_bytes);
 }
