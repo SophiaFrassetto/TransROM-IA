@@ -11,6 +11,7 @@ pub struct RomBinaryField {
 pub struct Rom {
     pub name: &'static str,
     pub path: &Path,
+    pub size: u64,
     pub buffer: Vec[u8]
     pub mmap:  Mmap,
 }
@@ -269,6 +270,10 @@ impl GbaRomHeader {
 }
 
 fn main() {
-    let rom_path = Path::new("./roms/Legend of Zelda, The - The Minish Cap (USA).gba");
+
+    let zelda: Rom = Rom{
+        name: "Legend of Zelda, The - The Minish Cap (USA)",
+        path: Path::new("./roms/Legend of Zelda, The - The Minish Cap (USA).gba")
+    }
 
 }
