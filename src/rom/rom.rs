@@ -1,3 +1,4 @@
+use std::str::from_utf8;
 use std::fs;
 use std::io;
 use std::path::PathBuf;
@@ -58,8 +59,37 @@ impl<F: RomFamily> Rom<F> {
         Ok(rom)
     }
 
-    pub fn load_buffer(&mut self) -> io::Result<()> {
+    fn load_buffer(&mut self) -> io::Result<()> {
         self.buffer = fs::read(&self.path)?;
         Ok(())
+    }
+
+    pub fn bytes_region(&self, region: &RomRegion) -> &[u8]{
+        let raw = &self.buffer[region.offset..region.offset+region.size];
+        return raw;
+    }
+
+    pub fn format_region(&self, region: &RomRegion) -> String {
+        let raw = &self.buffer[region.offset..region.offset+region.size];
+
+        if raw.iter().all(|b| b.is_ascii_graphic() || *b == b' ') {
+            String::from_utf8_lossy(raw).to_string()
+        } else {
+            "Not Ascii".to_string()
+        }
+    }
+
+    pub fn interpret_region(&self, region: &RomRegion) -> String {
+        let raw = &self.buffer[region.offset..region.offset+region.size];
+        if region.value_map.is_none() {
+            return "-".to_string();
+        }
+        if let Some(map) = region.value_map {
+            if let Some(entry) = map.iter().find(|m| m.raw == raw) {
+                return entry.meaning.to_string();
+            }
+        }
+
+        format!("Unknown")
     }
 }

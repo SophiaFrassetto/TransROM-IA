@@ -1,5 +1,3 @@
-use std::str::from_utf8;
-
 mod rom;
 mod formats;
 
@@ -7,27 +5,25 @@ use rom::Rom;
 use rom::RomFamily;
 use formats::gba::Gba;
 
-use crate::rom::RomRegion;
 
-
-
-fn format_region(raw: &[u8]) -> String {
-    match from_utf8(raw) {
-        Ok(text) => text.to_string(),
-        Err(_) => format!("{:02X?}", raw),
+fn diplay_gba_regions(rom: Rom<Gba>)-> Result<(), Box<dyn std::error::Error>>{
+    println!("| offset+size | name | kind | required | ascii | interpreted |");
+    for region in rom.family.spec().regions() {
+        let formated_region = &rom.format_region(region);
+        let interpreted_region = &rom.interpret_region(region);
+        println!(
+            "| {:04X}+{:02X} | {} | {:?} | {} | {} | {} |",
+            region.offset,
+            region.size,
+            region.name,
+            region.kind,
+            region.required,
+            formated_region,
+            interpreted_region
+        );
     }
+    Ok(())
 }
-
-fn interpret_region(region: &RomRegion, raw: &[u8]) -> String {
-    if let Some(map) = region.value_map {
-        if let Some(entry) = map.iter().find(|m| m.raw == raw) {
-            return entry.meaning.to_string();
-        }
-    }
-
-    format!("Unknown")
-}
-
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let rom = Rom::load(
@@ -35,22 +31,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "./roms/Legend of Zelda, The - The Minish Cap (USA).gba",
         Gba,
     )?;
+    let jp_rom = Rom::load(
+        "Zelda no Densetsu - Fushigi no Boushi",
+        "./roms/Zelda no Densetsu - Fushigi no Boushi (Japan).gba",
+        Gba,
+    )?;
+    let tbl_rom = Rom::load(
+        "Pokemon - FireRed Version",
+        "./roms/Pokemon - FireRed Version (USA).gba",
+        Gba,
+    )?;
 
-    for region in rom.family.spec().regions() {
-        let raw = &rom.buffer[region.offset..region.offset+region.size];
-        let display = format_region(raw);
-        let interpreted = interpret_region(region, raw);
-        println!(
-            "[{:X}+{}] {}: {:?} - required {} - {} - {}",
-            region.offset,
-            region.size,
-            region.name,
-            region.kind,
-            region.required,
-            display,
-            interpreted
-        );
-    }
+    println!("\n------------------{}------------------", rom.name);
+    let _ = diplay_gba_regions(rom);
+    println!("\n------------------{}------------------", jp_rom.name);
+    let _ = diplay_gba_regions(jp_rom);
+    println!("\n------------------{}------------------", tbl_rom.name);
+    let _ = diplay_gba_regions(tbl_rom);
 
     Ok(())
 }
