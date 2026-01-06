@@ -1,4 +1,4 @@
-use crate::rom::{RomFamily, RomRegion, RomRegionKind, RomSpec, RomValueMapping};
+use crate::rom::{RomFamily, RomRegion, RomRegionKind, RomSpec, RomValueMapping, RegionOrigin};
 
 pub struct GbaRomSpec;
 
@@ -16,6 +16,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Header,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 000h | 4 | ROM Entry Point | (32bit ARM branch opcode, eg. "B rom_start")
@@ -26,6 +27,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 004h | 156 | Nintendo Logo | (compressed bitmap, required!)
@@ -36,6 +38,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: true,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0A0h | 12 | Game Title | (uppercase ascii, max 12 characters, padded with 00h (if less than 12 chars))
@@ -46,6 +49,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Text,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0ACh | 4 | Game Code | (uppercase ascii, 4 characters)
@@ -76,6 +80,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Text,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
             // U  Unique Code          (usually "A" or "B" or special meaning)
             RomRegion {
@@ -94,6 +99,7 @@ impl RomSpec for GbaRomSpec {
                     RomValueMapping { raw: b"U", meaning: "Boktai 1 and 2 (cartridge with RTC and solar sensor)" },
                     RomValueMapping { raw: b"V", meaning: "Drill Dozer (cartridge with rumble)" },
                 ]),
+                origin: RegionOrigin::Spec,
             },
             // TT Short Title          (eg. "PM" for Pac Man)
             RomRegion {
@@ -103,6 +109,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Text,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
             // D  Destination/Language (usually "J" or "E" or "P" or specific language)
             RomRegion {
@@ -119,7 +126,8 @@ impl RomSpec for GbaRomSpec {
                     RomValueMapping { raw: b"E", meaning: "USA/English" },
                     RomValueMapping { raw: b"D", meaning: "German" },
                     RomValueMapping { raw: b"I", meaning: "Italian" },
-                ])
+                ]),
+                origin: RegionOrigin::Spec,
             },
 
             // 0B0h | 2 | Maker Code | (uppercase ascii, 2 characters, Identifies the (commercial) developer. For example, "01"=Nintendo)
@@ -132,6 +140,7 @@ impl RomSpec for GbaRomSpec {
                 value_map: Some(&[
                     RomValueMapping { raw: b"01", meaning: "Nintendo" },
                 ]),
+                origin: RegionOrigin::Spec,
             },
 
             // 0B2h | 1 | Fixed value | (must be 96h, required!)
@@ -142,6 +151,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: true,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0B3h | 1 | Main unit code | (00h for current GBA models, Identifies the required hardware. Should be 00h for current GBA models.)
@@ -152,6 +162,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0B4h | 1 | Device type | (usually 00h) (bit7=DACS/debug related)
@@ -166,6 +177,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0B5h | 7 | Reserved Area | (should be zero filled)
@@ -176,6 +188,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0BCh | 1 | Software version | (usually 00h)
@@ -186,6 +199,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0BDh | 1 | Complement check | (header checksum, required!)
@@ -198,6 +212,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: true,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0BEh | 2 | Reserved Area | (should be zero filled)
@@ -213,6 +228,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // --- Additional Multiboot Header Entries ---
@@ -227,6 +243,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0C4h | 1 | Boot mode (BYTE) | (init as 00h - BIOS overwrites this value!)
@@ -244,6 +261,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0C5h | 1 | Slave ID Number (BYTE) | (init as 00h - BIOS overwrites this value!)
@@ -261,6 +279,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0C6h | 26 | Not used | (seems to be unused)
@@ -271,6 +290,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
             // 0E0h | 4 | JOYBUS Entry Pt. | (32bit ARM branch opcode, eg. "B joy_start")
@@ -284,6 +304,7 @@ impl RomSpec for GbaRomSpec {
                 kind: RomRegionKind::Reserved,
                 required: false,
                 value_map: None,
+                origin: RegionOrigin::Spec,
             },
 
         ]
