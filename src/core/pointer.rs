@@ -1,7 +1,7 @@
 use crate::utils::progress::timed_bar;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct RomPointer {
     pub from: usize,
     pub to: usize,

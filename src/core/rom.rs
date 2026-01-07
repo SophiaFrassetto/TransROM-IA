@@ -1,4 +1,5 @@
 use std::{fs, io, path::PathBuf};
+use crate::core::family::RomFamily;
 // use crate::core::encoding::decode_text;
 use crate::core::pointer::*;
 use crate::core::region::*;
@@ -11,30 +12,24 @@ pub trait RomSpec {
     fn regions(&self) -> &'static [RomRegion];
 }
 
-pub trait RomFamily {
-    fn name(&self) -> &'static str;
-    fn spec(&self) -> &'static dyn RomSpec;
-}
 
 // pub struct Rom<F: RomFamily> {
 pub struct Rom{
     pub name: String,
     pub path: PathBuf,
-    // pub family: F,
     pub buffer: Vec<u8>,
     pub pointers: Vec<RomPointer>,
     pub regions: Vec<RomRegion>,
+    pub family: Option<RomFamily>,
     pub tbl: Option<&'static TblMap>,
 }
 
-// impl<F: RomFamily> Rom<F> {
 impl Rom<> {
-    // pub fn load(name: impl Into<String>, path: impl Into<PathBuf>, family: F, tbl: Option<&'static TblMap>) -> io::Result<Self> {
-    pub fn load(name: impl Into<String>, path: impl Into<PathBuf>, tbl: Option<&'static TblMap>) -> io::Result<Self> {
+    pub fn load(name: impl Into<String>, path: impl Into<PathBuf>, family: Option<RomFamily>, tbl: Option<&'static TblMap>) -> io::Result<Self> {
         let mut rom = Rom {
             name: name.into(),
             path: path.into(),
-            // family,
+            family,
             buffer: Vec::new(),
             pointers: Vec::new(),
             regions: Vec::new(),
@@ -55,20 +50,6 @@ impl Rom<> {
             self.buffer = data;
             Ok(())
         })
-    }
-
-    fn all_regions(&self) -> Vec<&RomRegion> {
-        let mut all = Vec::new();
-
-        // for r in self.family.spec().regions() {
-        //     all.push(r);
-        // }
-
-        for r in &self.regions {
-            all.push(r);
-        }
-
-        all
     }
 
     pub fn add_region(&mut self, region: RomRegion) {

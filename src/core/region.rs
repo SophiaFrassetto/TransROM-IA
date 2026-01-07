@@ -1,8 +1,8 @@
 use uuid::Uuid;
 
-use crate::core::heuristics::heuristics::{Classification, HeuristicScores, HumanAnnotation, RegionHistoryEntry};
+use crate::core::{family::RomFamily, heuristics::heuristics::{Classification, HeuristicScores, HumanAnnotation, RegionHistoryEntry}};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum RegionOrigin {
     Spec,
     Discovered,
@@ -18,13 +18,9 @@ pub enum RomRegionKind {
     Pointer,
     PointerTable,
     Reserved,
+    Compressed,
+    Asset,
     Unknown,
-}
-
-#[derive(Debug)]
-pub struct RomValueMapping {
-    pub raw: &'static [u8],
-    pub meaning: &'static str,
 }
 
 #[derive(Debug)]
@@ -36,6 +32,7 @@ pub struct RomRegion {
     pub size: usize,
     pub name: String,
     pub origin: RegionOrigin,
+    pub family: Option<RomFamily>,
 
     // Classificação
     pub classification: Classification,
