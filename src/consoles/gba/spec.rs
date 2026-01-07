@@ -1,5 +1,5 @@
-use crate::core::rom::{RomFamily};
-use crate::core::region::{RomRegion, RomRegionKind, RegionOrigin, RomSpec, RomValueMapping};
+use crate::core::rom::{RomFamily, RomSpec};
+use crate::core::region::{RomRegion, RomRegionKind, RegionOrigin, RomValueMapping};
 
 pub struct GbaRomSpec;
 

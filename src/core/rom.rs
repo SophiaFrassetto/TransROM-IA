@@ -6,6 +6,11 @@ use crate::core::heuristics::*;
 use crate::core::encoding::TblMap;
 use crate::utils::progress::timed_bar;
 
+
+pub trait RomSpec {
+    fn regions(&self) -> &'static [RomRegion];
+}
+
 pub trait RomFamily {
     fn name(&self) -> &'static str;
     fn spec(&self) -> &'static dyn RomSpec;
@@ -97,73 +102,5 @@ impl<F: RomFamily> Rom<F> {
                 pb.inc(1);
             }
         });
-    }
-
-    fn display_region(&self, region:&RomRegion){
-        let raw = self.bytes_region(region);
-        let decoded = decode_text(raw, self.tbl.as_deref()).unwrap_or_else(|| "Not decoded".to_string());
-        let interpreted_region = &self.interpret_region(region);
-        println!(
-            "| {:04X}+{:02X} | {} | {:?} | {} | {} | {} |",
-            region.offset,
-            region.size,
-            region.name,
-            region.kind,
-            region.required,
-            decoded,
-            interpreted_region
-        );
-    }
-
-    pub fn display_family_regions(
-        &self,
-        kind_filter: Option<&[RomRegionKind]>,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        let regions = self.family.spec().regions();
-
-        println!("| offset+size | name | kind | required | text | interpreted |");
-
-        for region in regions {
-            if !kind_matches(region, kind_filter) {
-                continue;
-            }
-            self.display_region(region)
-        }
-        Ok(())
-    }
-
-
-    pub fn display_regions(
-        &self,
-        kind_filter: Option<&[RomRegionKind]>,
-    ) {
-        println!("| offset+size | name | kind | required | text | interpreted |");
-
-        for region in self.all_regions() {
-            if !kind_matches(region, kind_filter) {
-                continue;
-            }
-
-            self.display_region(region)
-        }
-    }
-
-    pub fn bytes_region(&self, region: &RomRegion) -> &[u8]{
-        let raw = &self.buffer[region.offset..region.offset+region.size];
-        return raw;
-    }
-
-    pub fn interpret_region(&self, region: &RomRegion) -> String {
-        let raw = self.bytes_region(region);
-        if region.value_map.is_none() {
-            return "-".to_string();
-        }
-        if let Some(map) = region.value_map {
-            if let Some(entry) = map.iter().find(|m: &&RomValueMapping| m.raw == raw) {
-                return entry.meaning.to_string();
-            }
-        }
-
-        format!("Unknown")
     }
 }

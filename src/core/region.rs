@@ -17,10 +17,6 @@ pub enum RomRegionKind {
     Unknown,
 }
 
-pub trait RomSpec {
-    fn regions(&self) -> &'static [RomRegion];
-}
-
 #[derive(Debug)]
 pub struct RomValueMapping {
     pub raw: &'static [u8],

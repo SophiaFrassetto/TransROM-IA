@@ -1,5 +1,4 @@
 use crate::core::region::*;
-use crate::core::encoding::decode_text;
 use crate::core::encoding::TblMap;
 
 pub fn region_exists(regions: Vec<&RomRegion>, offset: usize) -> bool {
@@ -37,9 +36,9 @@ pub fn classify_region(raw: &[u8], tbl: Option<&TblMap>) -> RomRegionKind {
         return RomRegionKind::Unknown;
     }
 
-    if decode_text(raw, tbl).is_some() {
-        return RomRegionKind::Text;
-    }
+    // if decode_text(raw, tbl).is_some() {
+    //     return RomRegionKind::Text;
+    // }
 
     let mut ptr_like = 0;
     for chunk in raw.chunks_exact(4).take(8) {
