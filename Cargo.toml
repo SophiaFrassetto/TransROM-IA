@@ -7,3 +7,5 @@ edition = "2024"
 indicatif = "0.17"
 encoding_rs = "0.8"
 uuid = { version = "1.11", features = ["v4", "serde"] }
+sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio-native-tls"] }
+tokio = { version = "1", features = ["full"] }

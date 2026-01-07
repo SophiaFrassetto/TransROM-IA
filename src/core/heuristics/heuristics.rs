@@ -2,6 +2,10 @@ use std::time::SystemTime;
 
 use crate::core::region::*;
 
+pub struct HeuristicModel {
+    pub name: String,
+}
+
 #[derive(Debug)]
 pub struct HeuristicScores {
     pub text_ratio: f32, // % bytes plausíveis texto
@@ -31,14 +35,6 @@ pub struct HumanAnnotation {
     pub approved: bool,
     pub corrected_kind: Option<RomRegionKind>,
     pub notes: Option<String>,
-    pub reviewed_by: Option<String>,
-    pub reviewed_at: Option<SystemTime>,
-}
-
-#[derive(Debug)]
-pub struct RegionHistoryEntry {
-    pub time: SystemTime,
-    pub event: String,
 }
 
 // pub fn region_exists(regions: Vec<&RomRegion>, offset: usize) -> bool {
