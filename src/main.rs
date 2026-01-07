@@ -1,9 +1,10 @@
-mod rom;
-mod formats;
+mod consoles;
+mod core;
+pub mod utils;
 
-use rom::Rom;
-use rom::RomRegionKind;
-use formats::gba::Gba;
+use consoles::gba::spec::Gba;
+
+use core::{rom::Rom, region::RomRegionKind};
 
 
 
@@ -19,17 +20,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         //     "./roms/Zelda no Densetsu - Fushigi no Boushi (Japan).gba",
         //     Gba,
         // )?;
-        // let mut tbl_rom = Rom::load(
-            //     "Pokemon - FireRed Version",
-            //     "./roms/Pokemon - FireRed Version (USA).gba",
-            //     Gba,
-            // )?;
-
-    println!("\n------------------{}------------------", rom.name);
-    println!("------------------ Family Regions");
-    let _ = rom.display_family_regions(None);
-    // println!("------------------ All Regions [Text, Pointer]");
-    // let _ = rom.display_regions(Some(&[RomRegionKind::Text, RomRegionKind::Pointer]));
+    // let mut tbl_rom = Rom::load(
+        //     "Pokemon - FireRed Version",
+        //     "./roms/Pokemon - FireRed Version (USA).gba",
+        //     Gba,
+        // )?;
 
 
     Ok(())

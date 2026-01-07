@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 indicatif = "0.17"
 encoding_rs = "0.8"
+uuid = { version = "1.11", features = ["v4", "serde"] }
