@@ -33,34 +33,3 @@ pub fn scan_pointers(buffer: &[u8]) -> Vec<RomPointer> {
 
     found
 }
-
-pub fn detect_pointer_tables(pointers: &[RomPointer]) -> Vec<Vec<(usize, usize)>> {
-    let mut sorted = pointers.iter().collect::<Vec<_>>();
-    sorted.sort_by_key(|p| p.from);
-
-    let mut tables = Vec::new();
-    let mut current = Vec::new();
-
-    for p in sorted {
-        if current.is_empty() {
-            current.push((p.from, p.to));
-        } else {
-            let last = current.last().unwrap();
-            if p.from == last.0 + 4 {
-                current.push((p.from, p.to));
-            } else {
-                if current.len() >= 4 {
-                    tables.push(current.clone());
-                }
-                current.clear();
-                current.push((p.from, p.to));
-            }
-        }
-    }
-
-    if current.len() >= 4 {
-        tables.push(current);
-    }
-
-    tables
-}
