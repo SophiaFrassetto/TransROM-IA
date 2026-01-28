@@ -1,8 +1,0 @@
-[package]
-name = "transrom-ia"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-indicatif = "0.17"
-encoding_rs = "0.8"
