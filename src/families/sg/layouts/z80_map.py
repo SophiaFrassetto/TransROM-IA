@@ -17,15 +17,7 @@ SG_Z80_MAP_LAYOUT = BytesLayout(
     address_space="sg.cpu",
     tags=[Tag.execution, Tag.structural],
     notes="Z80 RAM and bus control registers.",
-    provides=[
-        "audio_subsystem",
-        "z80_memory_map",
-    ],
-    requires=[
-        "sg.address_map.standard",
-    ],
-    excludes=None,
-    applies_to=None,
+
     regions=[
         BytesRegion(
             id="sg.z80.ram",

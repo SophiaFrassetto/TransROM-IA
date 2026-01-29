@@ -19,13 +19,8 @@ GBA_SAVE_MAP_LAYOUT = BytesLayout(
     confidence=0.9,
     canonical_offset=0x00000000,
     address_space="gba.cpu",
-    tags=[Tag.structural, Tag.observed],
+    tags=[Tag.structural],
     notes="Standardized save memory windows used by commercial cartridges.",
-    provides=["save_memory_window"],
-    requires=["gba.address_map.standard"],
-    applies_to={
-        "cartridge_has_save": True
-    },
     regions=[
         BytesRegion(
             id="gba.save.sram",

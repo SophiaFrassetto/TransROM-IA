@@ -17,16 +17,7 @@ SG_SRAM_MAP_LAYOUT = BytesLayout(
     address_space="sg.cpu",
     tags=[Tag.structural, Tag.optional],
     notes="Commonly used address window for battery-backed SRAM.",
-    provides=[
-        "save_memory_window",
-    ],
-    requires=[
-        "sg.address_map.standard",
-    ],
-    excludes=None,
-    applies_to={
-        "cartridge_has_sram": True,
-    },
+
     regions=[
         BytesRegion(
             id="sg.sram.window",

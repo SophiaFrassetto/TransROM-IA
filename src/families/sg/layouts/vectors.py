@@ -19,13 +19,7 @@ SG_VECTORS_LAYOUT = BytesLayout(
     canonical_offset=0x000000,
     address_space="sg.rom",
     tags=[Tag.execution, Tag.structural],
-    provides=[
-        "execution_vectors",
-        "execution_entry",
-    ],
-    requires=None,
-    excludes=None,
-    applies_to=None,
+
     notes=(
         "Motorola 68000 vector table.\n"
         "Vector 0 contains the initial stack pointer.\n"

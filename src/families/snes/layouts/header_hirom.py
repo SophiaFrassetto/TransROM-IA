@@ -14,26 +14,5 @@ SNES_HEADER_HIROM_LAYOUT = BytesLayout(
     address_space="snes.rom",
     tags=[Tag.structural],
     notes="Canonical HiROM header layout.",
-    provides=[
-        "header",
-        "identity",
-        "cartridge_metadata",
-        "mapper:hirom",
-    ],
-
-    requires=[
-        "snes.vectors.hirom",
-        "snes.address_map.hirom",
-    ],
-
-    excludes=[
-        "snes.header.lorom",
-        "snes.header.exhirom",
-    ],
-
-    applies_to={
-        "mapper": "hirom",
-    },
-
     regions=[r.copy_with_offset_delta(0x8000) for r in SNES_HEADER_LOROM_LAYOUT.regions],
 )

@@ -35,6 +35,23 @@ class BytesRegion:
     default_value_mapped: Optional[List[MappedDefaultValue]] = None
     confidence: Optional[float] = None  # 0.0–1.0
     notes: Optional[str] = None
+    
+    def copy_with_offset_delta(self, delta: int) -> "BytesRegion":
+        return BytesRegion(
+            id=self.id,
+            name=self.name,
+            address_space=self.address_space,
+            kind=self.kind,
+            origin=self.origin,
+            offset=self.offset + delta,
+            size=self.size,
+            required=self.required,
+            tags=self.tags,
+            encoding=self.encoding,
+            confidence=self.confidence,
+            notes=self.notes,
+            default_value_mapped=self.default_value_mapped,
+        )
 
 
 @dataclass

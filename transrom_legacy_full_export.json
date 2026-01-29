@@ -1,0 +1,3463 @@
+{
+  "meta": {
+    "schema": "transrom_legacy_v1",
+    "offset_format": "hex",
+    "size_format": "int",
+    "notes": "Full legacy export from Python source (pre-DB)."
+  },
+  "families": {
+    "gba": {
+      "id": "gba",
+      "name": "Game Boy Advance",
+      "extensions": [
+        ".gba"
+      ],
+      "notes": null,
+      "hardware": [
+        {
+          "cpu": {
+            "id": "arm7tdmi",
+            "name": "ARM7TDMI",
+            "bitness": 32,
+            "byte_order": "little",
+            "supports_thumb": true,
+            "supports_modes": [
+              "arm",
+              "thumb"
+            ],
+            "notes": "ARM7TDMI CPU used in GBA, supports ARM and Thumb states",
+            "confidence": null
+          },
+          "pointer_model": {
+            "common_widths": [
+              32
+            ],
+            "relative_supported": false,
+            "banked": false,
+            "default_schema_id": "gba.ptr.absolute32",
+            "notes": null,
+            "confidence": null
+          },
+          "memory_model": {
+            "address_space_ids": [
+              "gba.rom",
+              "gba.wram",
+              "gba.iram",
+              "gba.vram",
+              "gba.sram"
+            ],
+            "mirrored": false,
+            "banked": false,
+            "notes": null,
+            "confidence": null
+          },
+          "banking_model": {
+            "supported": false,
+            "types": "none",
+            "bank_size": null,
+            "notes": "GBA cartridges typically do not use bank switching",
+            "confidence": null
+          },
+          "compression_support": {
+            "supported": true,
+            "common_types": [
+              "lz77",
+              "huffman",
+              "rle"
+            ],
+            "hardware_assisted": true,
+            "notes": "BIOS provides decompression routines",
+            "confidence": null
+          },
+          "notes": null,
+          "confidence": null
+        }
+      ],
+      "default_cartridge_hardware": [
+        {
+          "extra_cpu": false,
+          "coprocessors": [],
+          "rtc": false,
+          "sensors": [],
+          "rumble": false,
+          "notes": null,
+          "confidence": null
+        }
+      ],
+      "layouts": {
+        "gba.header.standard": {
+          "id": "gba.header.standard",
+          "name": "GBA Cartridge Header",
+          "address_space": "gba.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Standard fixed GBA cartridge header.",
+          "regions": [
+            {
+              "id": "gba.header",
+              "name": "GBA Cartridge Header",
+              "address_space": "gba.rom",
+              "kind": "header",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x0",
+              "size": 192,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Standard fixed GBA cartridge header located at the beginning of the ROM."
+            },
+            {
+              "id": "gba.header.entry_point",
+              "name": "ROM Entry Point",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x0",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "32-bit ARM branch instruction"
+            },
+            {
+              "id": "gba.header.nintendo_logo",
+              "name": "Nintendo Logo",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x4",
+              "size": 156,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Compressed bitmap, must match official logo"
+            },
+            {
+              "id": "gba.header.game_title",
+              "name": "Game Title",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xa0",
+              "size": 12,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.header.game_code",
+              "name": "Game Code",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xac",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "informational",
+                "structural"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.header.game_code.unique",
+              "name": "Game Code – Unique ID",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xac",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational",
+                "structural"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.game_code.unique.a",
+                  "raw": "0x41",
+                  "meaning": "Normal game; Older titles (mainly 2001..2003)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.b",
+                  "raw": "0x42",
+                  "meaning": "Normal game; Newer titles (2003..)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.c",
+                  "raw": "0x43",
+                  "meaning": "Normal game; Not used yet, but might be used for even newer titles",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.f",
+                  "raw": "0x46",
+                  "meaning": "Famicom/Classic NES Series (software emulated NES games)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.k",
+                  "raw": "0x4b",
+                  "meaning": "Yoshi and Koro Koro Puzzle (acceleration sensor)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.p",
+                  "raw": "0x50",
+                  "meaning": "e-Reader (dot-code scanner) (or NDS PassMe image when gamecode='PASS')",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.r",
+                  "raw": "0x52",
+                  "meaning": "Warioware Twisted (cartridge with rumble and z-axis gyro sensor)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.u",
+                  "raw": "0x55",
+                  "meaning": "Boktai 1 and 2 (cartridge with RTC and solar sensor)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.unique.v",
+                  "raw": "0x56",
+                  "meaning": "Drill Dozer (cartridge with rumble)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.game_code.short_title",
+              "name": "Game Code – Short Title",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xad",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.header.game_code.region",
+              "name": "Game Code – Region",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xaf",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.game_code.region.j",
+                  "raw": "0x4a",
+                  "meaning": "Japan",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.e",
+                  "raw": "0x45",
+                  "meaning": "USA/English",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.p",
+                  "raw": "0x50",
+                  "meaning": "Europe/Elsewhere",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.d",
+                  "raw": "0x44",
+                  "meaning": "German",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.f",
+                  "raw": "0x46",
+                  "meaning": "French",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.i",
+                  "raw": "0x49",
+                  "meaning": "Italian",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.game_code.region.s",
+                  "raw": "0x53",
+                  "meaning": "Spanish",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.maker_code",
+              "name": "Maker Code",
+              "address_space": "gba.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xb0",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.maker_code.nintendo",
+                  "raw": "0x3031",
+                  "meaning": "Nintendo",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.maker_code.capcom",
+                  "raw": "0x3038",
+                  "meaning": "Capcom",
+                  "origin": "observed",
+                  "confidence": 0.95
+                },
+                {
+                  "id": "gba.header.maker_code.ea",
+                  "raw": "0x3133",
+                  "meaning": "Electronic Arts",
+                  "origin": "observed",
+                  "confidence": 0.95
+                },
+                {
+                  "id": "gba.header.maker_code.hudson",
+                  "raw": "0x3138",
+                  "meaning": "Hudson Soft",
+                  "origin": "observed",
+                  "confidence": 0.9
+                },
+                {
+                  "id": "gba.header.maker_code.kemco",
+                  "raw": "0x3238",
+                  "meaning": "Kemco",
+                  "origin": "observed",
+                  "confidence": 0.9
+                },
+                {
+                  "id": "gba.header.maker_code.bandai",
+                  "raw": "0x3332",
+                  "meaning": "Bandai",
+                  "origin": "observed",
+                  "confidence": 0.95
+                },
+                {
+                  "id": "gba.header.maker_code.konami",
+                  "raw": "0x3334",
+                  "meaning": "Konami",
+                  "origin": "observed",
+                  "confidence": 0.95
+                },
+                {
+                  "id": "gba.header.maker_code.ubisoft",
+                  "raw": "0x3431",
+                  "meaning": "Ubisoft",
+                  "origin": "observed",
+                  "confidence": 0.9
+                },
+                {
+                  "id": "gba.header.maker_code.irem",
+                  "raw": "0x3439",
+                  "meaning": "Irem",
+                  "origin": "observed",
+                  "confidence": 0.85
+                },
+                {
+                  "id": "gba.header.maker_code.absolute",
+                  "raw": "0x3530",
+                  "meaning": "Absolute Entertainment",
+                  "origin": "observed",
+                  "confidence": 0.85
+                },
+                {
+                  "id": "gba.header.maker_code.activision",
+                  "raw": "0x3532",
+                  "meaning": "Activision",
+                  "origin": "observed",
+                  "confidence": 0.95
+                },
+                {
+                  "id": "gba.header.maker_code.titus",
+                  "raw": "0x3630",
+                  "meaning": "Titus",
+                  "origin": "observed",
+                  "confidence": 0.85
+                },
+                {
+                  "id": "gba.header.maker_code.lucasarts",
+                  "raw": "0x3634",
+                  "meaning": "LucasArts",
+                  "origin": "observed",
+                  "confidence": 0.9
+                },
+                {
+                  "id": "gba.header.maker_code.infogrames",
+                  "raw": "0x3730",
+                  "meaning": "Infogrames",
+                  "origin": "observed",
+                  "confidence": 0.9
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.fixed_value",
+              "name": "Fixed Value (0x96)",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xb2",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.fixed_value.0x96",
+                  "raw": "0x96",
+                  "meaning": "Must be 0x96",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.main_unit_code",
+              "name": "Main Unit Code",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xb3",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "validation",
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.main_unit_code.0x00",
+                  "raw": "0x00",
+                  "meaning": "00h for current GBA models",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": "00h for standard GBA"
+            },
+            {
+              "id": "gba.header.device_type",
+              "name": "Device Type",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xb4",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.device_type.normal",
+                  "raw": "0x00",
+                  "meaning": "Normal device type (usual default)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.reserved_1",
+              "name": "Reserved Area",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xb5",
+              "size": 7,
+              "required": true,
+              "tags": [
+                "validation",
+                "deprecated"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.reserved_1.zero_filled",
+                  "raw": "0x00000000000000",
+                  "meaning": "Should be zero-filled",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.software_version",
+              "name": "Software Version",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xbc",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.software_version.zero",
+                  "raw": "0x00",
+                  "meaning": "Usually zero (software version)",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.checksum",
+              "name": "Header Checksum",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xbd",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Complement check of bytes 0xA0–0xBC"
+            },
+            {
+              "id": "gba.header.reserved_2",
+              "name": "Reserved Area",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xbe",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation",
+                "deprecated"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.reserved_2.zero_filled",
+                  "raw": "0x0000",
+                  "meaning": "Should be zero-filled",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            }
+          ]
+        },
+        "gba.header.multiboot": {
+          "id": "gba.header.multiboot",
+          "name": "GBA Multiboot Extension",
+          "address_space": "gba.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0xc0",
+          "tags": [
+            "optional",
+            "execution"
+          ],
+          "notes": "Optional multiboot extension for Normal, Multiplay and Joybus modes.",
+          "regions": [
+            {
+              "id": "gba.header.multiboot.ram_entry_point",
+              "name": "RAM Entry Point",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xc0",
+              "size": 4,
+              "required": false,
+              "tags": [
+                "execution",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.header.multiboot.boot_mode",
+              "name": "Boot Mode",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xc4",
+              "size": 1,
+              "required": false,
+              "tags": [
+                "execution",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.multiboot.boot_mode.init_zero",
+                  "raw": "0x00",
+                  "meaning": "Init as 00h - BIOS overwrites this value",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.boot_mode.joybus",
+                  "raw": "0x01",
+                  "meaning": "01h: Joybus mode",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.boot_mode.normal",
+                  "raw": "0x02",
+                  "meaning": "02h: Normal mode",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.boot_mode.multiplay",
+                  "raw": "0x03",
+                  "meaning": "03h: Multiplay mode",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.multiboot.slave_id_number",
+              "name": "Slave ID Number",
+              "address_space": "gba.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xc5",
+              "size": 1,
+              "required": false,
+              "tags": [
+                "execution",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.multiboot.slave_id_number.init_zero",
+                  "raw": "0x00",
+                  "meaning": "Init as 00h - BIOS overwrites this value",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.slave_id_number.slave_1",
+                  "raw": "0x01",
+                  "meaning": "01h: Slave #1",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.slave_id_number.slave_2",
+                  "raw": "0x02",
+                  "meaning": "02h: Slave #2",
+                  "origin": "spec",
+                  "confidence": 1.0
+                },
+                {
+                  "id": "gba.header.multiboot.slave_id_number.slave_3",
+                  "raw": "0x03",
+                  "meaning": "03h: Slave #3",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.multiboot.not_used",
+              "name": "Not used",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xc6",
+              "size": 26,
+              "required": false,
+              "tags": [
+                "structural",
+                "deprecated"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "gba.header.multiboot.not_used.zero_filled",
+                  "raw": "0x0000000000000000000000000000000000000000000000000000",
+                  "meaning": "Should be zero-filled",
+                  "origin": "spec",
+                  "confidence": 1.0
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "gba.header.multiboot.joybus_entry_point",
+              "name": "JOYBUS Entry Point",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xe0",
+              "size": 4,
+              "required": false,
+              "tags": [
+                "execution",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": "little",
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "gba.address_map.standard": {
+          "id": "gba.address_map.standard",
+          "name": "GBA Address Map",
+          "address_space": "gba.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Fixed memory map of the Game Boy Advance CPU.",
+          "regions": [
+            {
+              "id": "gba.map.rom",
+              "name": "Game Pak ROM",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x8000000",
+              "size": 33554432,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Up to 32MB of ROM space."
+            },
+            {
+              "id": "gba.map.wram_board",
+              "name": "External WRAM",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x2000000",
+              "size": 262144,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "256KB external work RAM."
+            },
+            {
+              "id": "gba.map.wram_chip",
+              "name": "Internal WRAM",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x3000000",
+              "size": 32768,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "32KB internal work RAM."
+            },
+            {
+              "id": "gba.map.vram",
+              "name": "Video RAM",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x6000000",
+              "size": 98304,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.map.oam",
+              "name": "Object Attribute Memory",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7000000",
+              "size": 1024,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.map.palette",
+              "name": "Palette RAM",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x5000000",
+              "size": 1024,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "gba.vectors.standard": {
+          "id": "gba.vectors.standard",
+          "name": "GBA ARM Exception Vectors",
+          "address_space": "gba.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "ARM exception vector table.\nMost vectors contain a branch instruction to actual handlers.\nOnly the reset vector is strictly required for execution.",
+          "regions": [
+            {
+              "id": "gba.vector.reset",
+              "name": "Reset Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x0",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Executed immediately after BIOS initialization."
+            },
+            {
+              "id": "gba.vector.undefined_instruction",
+              "name": "Undefined Instruction Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x4",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.vector.software_interrupt",
+              "name": "Software Interrupt (SWI) Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x8",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.vector.prefetch_abort",
+              "name": "Prefetch Abort Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xc",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.vector.data_abort",
+              "name": "Data Abort Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x10",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.vector.reserved",
+              "name": "Reserved Vector",
+              "address_space": "gba.rom",
+              "kind": "reserved",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x14",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Reserved; typically unused."
+            },
+            {
+              "id": "gba.vector.irq",
+              "name": "IRQ Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x18",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "gba.vector.fiq",
+              "name": "FIQ Vector",
+              "address_space": "gba.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1c",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "gba.cartridge.save_map": {
+          "id": "gba.cartridge.save_map",
+          "name": "GBA Save Memory Address Windows",
+          "address_space": "gba.cpu",
+          "origin": "observed",
+          "confidence": 0.9,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Standardized save memory windows used by commercial cartridges.",
+          "regions": [
+            {
+              "id": "gba.save.sram",
+              "name": "SRAM Save Area",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "observed",
+              "confidence": null,
+              "offset": "0xe000000",
+              "size": 65536,
+              "required": false,
+              "tags": [
+                "structural",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "64KB SRAM window (used by SRAM and FLASH emulation)."
+            },
+            {
+              "id": "gba.save.eeprom",
+              "name": "EEPROM Save Interface",
+              "address_space": "gba.cpu",
+              "kind": "mapping",
+              "origin": "observed",
+              "confidence": null,
+              "offset": "0xd000000",
+              "size": 8192,
+              "required": false,
+              "tags": [
+                "structural",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "EEPROM interface (addressed via serial protocol)."
+            }
+          ]
+        }
+      }
+    },
+    "snes": {
+      "id": "snes",
+      "name": "Super Nintendo Entertainment System",
+      "extensions": [
+        ".sfc",
+        ".smc"
+      ],
+      "notes": null,
+      "hardware": {
+        "cpu": {
+          "id": "65c816",
+          "name": "Ricoh 5A22 (65C816)",
+          "bitness": 16,
+          "byte_order": "little",
+          "supports_thumb": null,
+          "supports_modes": [
+            "native",
+            "emulation"
+          ],
+          "notes": "65C816-compatible CPU with banked addressing.",
+          "confidence": null
+        },
+        "pointer_model": {
+          "common_widths": [
+            16,
+            24
+          ],
+          "relative_supported": true,
+          "banked": true,
+          "default_schema_id": "snes.ptr.banked",
+          "notes": null,
+          "confidence": null
+        },
+        "memory_model": {
+          "address_space_ids": [
+            "snes.rom",
+            "snes.wram",
+            "snes.vram",
+            "snes.sram"
+          ],
+          "mirrored": true,
+          "banked": true,
+          "notes": null,
+          "confidence": null
+        },
+        "banking_model": {
+          "supported": true,
+          "types": [
+            "LoROM",
+            "HiROM"
+          ],
+          "bank_size": 32768,
+          "notes": "Bank size and decoding depend on mapping type.",
+          "confidence": null
+        },
+        "compression_support": {
+          "supported": true,
+          "common_types": [
+            "custom",
+            "sdd1"
+          ],
+          "hardware_assisted": true,
+          "notes": "Some cartridges include hardware-assisted decompression.",
+          "confidence": null
+        },
+        "notes": null,
+        "confidence": null
+      },
+      "default_cartridge_hardware": {
+        "extra_cpu": true,
+        "coprocessors": [
+          "SuperFX",
+          "SA-1",
+          "DSP",
+          "S-DD1"
+        ],
+        "rtc": false,
+        "sensors": [],
+        "rumble": false,
+        "notes": null,
+        "confidence": null
+      },
+      "layouts": {
+        "snes.header.lorom": {
+          "id": "snes.header.lorom",
+          "name": "SNES Internal Header (LoROM)",
+          "address_space": "snes.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x7fc0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Canonical LoROM header layout.",
+          "regions": [
+            {
+              "id": "snes.header.game_title",
+              "name": "Game Title",
+              "address_space": "snes.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fc0",
+              "size": 21,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Uppercase ASCII title, padded with spaces. Used by tools and emulators; not required by hardware."
+            },
+            {
+              "id": "snes.header.map_mode",
+              "name": "Map Mode",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fd5",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x20",
+                  "raw": "Slow LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x30",
+                  "raw": "Fast LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x21",
+                  "raw": "Slow HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x31",
+                  "raw": "Fast HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x25",
+                  "raw": "ExHiROM (observed)",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Determines memory mapping and access speed.\nBit 7: FastROM flag\nLower bits: mapping type (LoROM / HiROM / ExHiROM).\nThis value is essential to locate the correct header."
+            },
+            {
+              "id": "snes.header.rom_type",
+              "name": "ROM Type",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fd6",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "ROM only",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "ROM + RAM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "ROM + RAM + Battery",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x03",
+                  "raw": "SuperFX",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x05",
+                  "raw": "SA-1",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x0a",
+                  "raw": "S-DD1",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Indicates presence of SRAM, battery, or coprocessors.\nMany advanced cartridges include additional CPUs or logic."
+            },
+            {
+              "id": "snes.header.rom_size",
+              "name": "ROM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fd7",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Encoded as power-of-two size.\nValue N represents ROM size = 2^(N+10) bytes.\nSome ROMs lie about this value; file size is authoritative."
+            },
+            {
+              "id": "snes.header.sram_size",
+              "name": "SRAM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fd8",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "0 indicates no SRAM. Otherwise encoded similarly to ROM size."
+            },
+            {
+              "id": "snes.header.country",
+              "name": "Country Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fd9",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Japan",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "USA",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "Europe",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": "Used for regional lockout and video mode assumptions."
+            },
+            {
+              "id": "snes.header.licensee",
+              "name": "Licensee Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fda",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational",
+                "experimental"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Publisher/licensee identifier. Poorly standardized."
+            },
+            {
+              "id": "snes.header.version",
+              "name": "ROM Version",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fdb",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Initial version",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "snes.header.checksum_complement",
+              "name": "Checksum Complement",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fdc",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Bitwise complement of the checksum."
+            },
+            {
+              "id": "snes.header.checksum",
+              "name": "Checksum",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x7fde",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "16-bit checksum of the entire ROM.\nFrequently incorrect in homebrew and modified ROMs.\nUsed mainly by tools, not by the console itself."
+            }
+          ]
+        },
+        "snes.header.hirom": {
+          "id": "snes.header.hirom",
+          "name": "SNES Internal Header (HiROM)",
+          "address_space": "snes.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0xffc0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Canonical HiROM header layout.",
+          "regions": [
+            {
+              "id": "snes.header.game_title",
+              "name": "Game Title",
+              "address_space": "snes.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffc0",
+              "size": 21,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Uppercase ASCII title, padded with spaces. Used by tools and emulators; not required by hardware."
+            },
+            {
+              "id": "snes.header.map_mode",
+              "name": "Map Mode",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffd5",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x20",
+                  "raw": "Slow LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x30",
+                  "raw": "Fast LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x21",
+                  "raw": "Slow HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x31",
+                  "raw": "Fast HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x25",
+                  "raw": "ExHiROM (observed)",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Determines memory mapping and access speed.\nBit 7: FastROM flag\nLower bits: mapping type (LoROM / HiROM / ExHiROM).\nThis value is essential to locate the correct header."
+            },
+            {
+              "id": "snes.header.rom_type",
+              "name": "ROM Type",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffd6",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "ROM only",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "ROM + RAM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "ROM + RAM + Battery",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x03",
+                  "raw": "SuperFX",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x05",
+                  "raw": "SA-1",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x0a",
+                  "raw": "S-DD1",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Indicates presence of SRAM, battery, or coprocessors.\nMany advanced cartridges include additional CPUs or logic."
+            },
+            {
+              "id": "snes.header.rom_size",
+              "name": "ROM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffd7",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Encoded as power-of-two size.\nValue N represents ROM size = 2^(N+10) bytes.\nSome ROMs lie about this value; file size is authoritative."
+            },
+            {
+              "id": "snes.header.sram_size",
+              "name": "SRAM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffd8",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "0 indicates no SRAM. Otherwise encoded similarly to ROM size."
+            },
+            {
+              "id": "snes.header.country",
+              "name": "Country Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffd9",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Japan",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "USA",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "Europe",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": "Used for regional lockout and video mode assumptions."
+            },
+            {
+              "id": "snes.header.licensee",
+              "name": "Licensee Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffda",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational",
+                "experimental"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Publisher/licensee identifier. Poorly standardized."
+            },
+            {
+              "id": "snes.header.version",
+              "name": "ROM Version",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffdb",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Initial version",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "snes.header.checksum_complement",
+              "name": "Checksum Complement",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffdc",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Bitwise complement of the checksum."
+            },
+            {
+              "id": "snes.header.checksum",
+              "name": "Checksum",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0xffde",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "16-bit checksum of the entire ROM.\nFrequently incorrect in homebrew and modified ROMs.\nUsed mainly by tools, not by the console itself."
+            }
+          ]
+        },
+        "snes.header.exhirom": {
+          "id": "snes.header.exhirom",
+          "name": "SNES Internal Header (ExHiROM)",
+          "address_space": "snes.rom",
+          "origin": "observed",
+          "confidence": 0.9,
+          "canonical_offset": "0x40ffc0",
+          "tags": [
+            "structural",
+            "experimental"
+          ],
+          "notes": "Extended HiROM header for very large cartridges.",
+          "regions": [
+            {
+              "id": "snes.header.game_title",
+              "name": "Game Title",
+              "address_space": "snes.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fc0",
+              "size": 21,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Uppercase ASCII title, padded with spaces. Used by tools and emulators; not required by hardware."
+            },
+            {
+              "id": "snes.header.map_mode",
+              "name": "Map Mode",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fd5",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x20",
+                  "raw": "Slow LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x30",
+                  "raw": "Fast LoROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x21",
+                  "raw": "Slow HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x31",
+                  "raw": "Fast HiROM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x25",
+                  "raw": "ExHiROM (observed)",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Determines memory mapping and access speed.\nBit 7: FastROM flag\nLower bits: mapping type (LoROM / HiROM / ExHiROM).\nThis value is essential to locate the correct header."
+            },
+            {
+              "id": "snes.header.rom_type",
+              "name": "ROM Type",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fd6",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "ROM only",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "ROM + RAM",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "ROM + RAM + Battery",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x03",
+                  "raw": "SuperFX",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x05",
+                  "raw": "SA-1",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x0a",
+                  "raw": "S-DD1",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": "Indicates presence of SRAM, battery, or coprocessors.\nMany advanced cartridges include additional CPUs or logic."
+            },
+            {
+              "id": "snes.header.rom_size",
+              "name": "ROM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fd7",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Encoded as power-of-two size.\nValue N represents ROM size = 2^(N+10) bytes.\nSome ROMs lie about this value; file size is authoritative."
+            },
+            {
+              "id": "snes.header.sram_size",
+              "name": "SRAM Size",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fd8",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "0 indicates no SRAM. Otherwise encoded similarly to ROM size."
+            },
+            {
+              "id": "snes.header.country",
+              "name": "Country Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fd9",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Japan",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x01",
+                  "raw": "USA",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                },
+                {
+                  "id": "0x02",
+                  "raw": "Europe",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": "Used for regional lockout and video mode assumptions."
+            },
+            {
+              "id": "snes.header.licensee",
+              "name": "Licensee Code",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fda",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational",
+                "experimental"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Publisher/licensee identifier. Poorly standardized."
+            },
+            {
+              "id": "snes.header.version",
+              "name": "ROM Version",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fdb",
+              "size": 1,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00",
+                  "raw": "Initial version",
+                  "meaning": "spec",
+                  "origin": 1.0,
+                  "confidence": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "snes.header.checksum_complement",
+              "name": "Checksum Complement",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fdc",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Bitwise complement of the checksum."
+            },
+            {
+              "id": "snes.header.checksum",
+              "name": "Checksum",
+              "address_space": "snes.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": 1.0,
+              "offset": "0x407fde",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "16-bit checksum of the entire ROM.\nFrequently incorrect in homebrew and modified ROMs.\nUsed mainly by tools, not by the console itself."
+            }
+          ]
+        },
+        "snes.vectors.lorom": {
+          "id": "snes.vectors.lorom",
+          "name": "SNES CPU Vectors (LoROM)",
+          "address_space": "snes.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x7fe0",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "CPU exception and reset vectors for LoROM cartridges.",
+          "regions": [
+            {
+              "id": "snes.vector.emu.reset",
+              "name": "Emulation Reset Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7ffc",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.emu.nmi",
+              "name": "Emulation NMI Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7ffa",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.emu.irq",
+              "name": "Emulation IRQ Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7ffe",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.reset",
+              "name": "Native Reset Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7ff4",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.nmi",
+              "name": "Native NMI Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7fea",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.irq",
+              "name": "Native IRQ Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7fee",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.vectors.hirom": {
+          "id": "snes.vectors.hirom",
+          "name": "SNES CPU Vectors (HiROM)",
+          "address_space": "snes.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0xffe0",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "CPU exception and reset vectors for HiROM cartridges.",
+          "regions": [
+            {
+              "id": "snes.vector.emu.reset",
+              "name": "Emulation Reset Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xfffc",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.emu.nmi",
+              "name": "Emulation NMI Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xfffa",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.emu.irq",
+              "name": "Emulation IRQ Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xfffe",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.reset",
+              "name": "Native Reset Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xfff4",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.nmi",
+              "name": "Native NMI Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xffea",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.vector.native.irq",
+              "name": "Native IRQ Vector",
+              "address_space": "snes.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xffee",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.address_map.lorom": {
+          "id": "snes.address_map.lorom",
+          "name": "SNES Address Map (LoROM)",
+          "address_space": "snes.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Logical memory map for LoROM cartridges.",
+          "regions": [
+            {
+              "id": "snes.map.lorom.rom_low",
+              "name": "ROM (banks 00–3F)",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x8000",
+              "size": 32768,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.map.lorom.wram",
+              "name": "Work RAM",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7e0000",
+              "size": 131072,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.address_map.hirom": {
+          "id": "snes.address_map.hirom",
+          "name": "SNES Address Map (HiROM)",
+          "address_space": "snes.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Logical memory map for HiROM cartridges.",
+          "regions": [
+            {
+              "id": "snes.map.hirom.rom",
+              "name": "ROM (banks C0–FF)",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xc00000",
+              "size": 4194304,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "snes.map.hirom.wram",
+              "name": "Work RAM",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x7e0000",
+              "size": 131072,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.system.dma_registers": {
+          "id": "snes.system.dma_registers",
+          "name": "SNES DMA / HDMA Registers",
+          "address_space": "snes.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x4300",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "DMA and HDMA channel registers.",
+          "regions": [
+            {
+              "id": "snes.dma.channel0",
+              "name": "DMA Channel 0 Registers",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x4300",
+              "size": 16,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.system.ppu_registers": {
+          "id": "snes.system.ppu_registers",
+          "name": "SNES PPU Registers",
+          "address_space": "snes.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x2100",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "Picture Processing Unit registers.",
+          "regions": [
+            {
+              "id": "snes.ppu.registers",
+              "name": "PPU Registers",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x2100",
+              "size": 64,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "snes.system.apu_registers": {
+          "id": "snes.system.apu_registers",
+          "name": "SNES APU Registers",
+          "address_space": "snes.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x2140",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "Audio Processing Unit I/O registers.",
+          "regions": [
+            {
+              "id": "snes.apu.io",
+              "name": "APU I/O Registers",
+              "address_space": "snes.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x2140",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        }
+      }
+    },
+    "sg": {
+      "id": "sg",
+      "name": "Sega Genesis / Mega Drive",
+      "extensions": [
+        ".bin",
+        ".gen",
+        ".md"
+      ],
+      "notes": null,
+      "hardware": {
+        "cpu": {
+          "id": "m68000",
+          "name": "Motorola 68000",
+          "bitness": 16,
+          "byte_order": "big",
+          "supports_thumb": false,
+          "supports_modes": [],
+          "notes": "Main CPU used for game logic and execution.",
+          "confidence": null
+        },
+        "pointer_model": {
+          "common_widths": [
+            24
+          ],
+          "relative_supported": false,
+          "banked": false,
+          "default_schema_id": null,
+          "notes": null,
+          "confidence": null
+        },
+        "memory_model": {
+          "address_space_ids": [
+            "sg.rom",
+            "sg.ram",
+            "sg.vram"
+          ],
+          "mirrored": true,
+          "banked": false,
+          "notes": null,
+          "confidence": null
+        },
+        "banking_model": {
+          "supported": false,
+          "types": [],
+          "bank_size": null,
+          "notes": null,
+          "confidence": null
+        },
+        "compression_support": {
+          "supported": false,
+          "common_types": [],
+          "hardware_assisted": false,
+          "notes": "No standard hardware compression.",
+          "confidence": null
+        },
+        "notes": null,
+        "confidence": null
+      },
+      "default_cartridge_hardware": {
+        "extra_cpu": false,
+        "coprocessors": [],
+        "rtc": false,
+        "sensors": [],
+        "rumble": false,
+        "notes": null,
+        "confidence": null
+      },
+      "layouts": {
+        "sg.header.standard": {
+          "id": "sg.header.standard",
+          "name": "Sega Genesis / Mega Drive Header",
+          "address_space": "sg.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x100",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Single fixed header layout for all standard cartridges.",
+          "regions": [
+            {
+              "id": "sg.header.console_name",
+              "name": "Console Name",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x100",
+              "size": 16,
+              "required": true,
+              "tags": [
+                "validation",
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x53454741204d454741204452495645",
+                  "raw": "Mega Drive",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                },
+                {
+                  "id": "0x534547412047454e45534953202020",
+                  "raw": "Genesis",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                }
+              ],
+              "notes": "Used by emulators for informal validation."
+            },
+            {
+              "id": "sg.header.copyright",
+              "name": "Copyright",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x110",
+              "size": 16,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.domestic_title",
+              "name": "Domestic Title",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x120",
+              "size": 48,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.overseas_title",
+              "name": "Overseas Title",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x150",
+              "size": 48,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.product_code",
+              "name": "Product Code",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x180",
+              "size": 14,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Internal Sega identifier (GM XXXXX-XX)."
+            },
+            {
+              "id": "sg.header.product_version",
+              "name": "Product Version",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x18e",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.checksum",
+              "name": "ROM Checksum",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x190",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Often incorrect even in official cartridges."
+            },
+            {
+              "id": "sg.header.io_support",
+              "name": "I/O Support",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x192",
+              "size": 16,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Peripheral support hints (often unreliable)."
+            },
+            {
+              "id": "sg.header.rom_start",
+              "name": "ROM Start Address",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1a0",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x00000000",
+                  "raw": "ROM base",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                }
+              ],
+              "notes": null
+            },
+            {
+              "id": "sg.header.rom_end",
+              "name": "ROM End Address",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1a4",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.ram_start",
+              "name": "RAM Start Address",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1a8",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.ram_end",
+              "name": "RAM End Address",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1ac",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.backup_ram_id",
+              "name": "Backup RAM ID",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1b0",
+              "size": 12,
+              "required": true,
+              "tags": [
+                "structural",
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Indicates presence/type of battery-backed RAM."
+            },
+            {
+              "id": "sg.header.backup_ram_start",
+              "name": "Backup RAM Start",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1bc",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.backup_ram_end",
+              "name": "Backup RAM End",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1c0",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.header.modem_info",
+              "name": "Modem Info",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1c4",
+              "size": 12,
+              "required": true,
+              "tags": [
+                "experimental",
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Used by Sega Meganet titles."
+            },
+            {
+              "id": "sg.header.region_code",
+              "name": "Region Code",
+              "address_space": "sg.rom",
+              "kind": "text",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x1f0",
+              "size": 16,
+              "required": true,
+              "tags": [
+                "informational"
+              ],
+              "encoding": "ascii",
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [
+                {
+                  "id": "0x4a",
+                  "raw": "Japan",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                },
+                {
+                  "id": "0x55",
+                  "raw": "USA",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                },
+                {
+                  "id": "0x45",
+                  "raw": "Europe",
+                  "meaning": "observed",
+                  "origin": 0.9,
+                  "confidence": null
+                },
+                {
+                  "id": "0x4a5545",
+                  "raw": "Multi-region",
+                  "meaning": "observed",
+                  "origin": 0.95,
+                  "confidence": null
+                }
+              ],
+              "notes": null
+            }
+          ]
+        },
+        "sg.address_map.standard": {
+          "id": "sg.address_map.standard",
+          "name": "SG/MD Address Map",
+          "address_space": "sg.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural"
+          ],
+          "notes": "Logical memory map of the Mega Drive.",
+          "regions": [
+            {
+              "id": "sg.map.rom",
+              "name": "Cartridge ROM",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x0",
+              "size": 4194304,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Up to 4MB of ROM space."
+            },
+            {
+              "id": "sg.map.ram",
+              "name": "Main Work RAM",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xff0000",
+              "size": 65536,
+              "required": true,
+              "tags": [
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "64KB system RAM."
+            }
+          ]
+        },
+        "sg.vectors.standard": {
+          "id": "sg.vectors.standard",
+          "name": "SG/MD CPU Vectors (68000)",
+          "address_space": "sg.rom",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0x0",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "Motorola 68000 vector table.\nVector 0 contains the initial stack pointer.\nVector 1 contains the initial program counter.",
+          "regions": [
+            {
+              "id": "sg.vector.initial_stack_pointer",
+              "name": "Initial Stack Pointer",
+              "address_space": "sg.rom",
+              "kind": "data",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x0",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Loaded into A7 on reset."
+            },
+            {
+              "id": "sg.vector.initial_program_counter",
+              "name": "Initial Program Counter",
+              "address_space": "sg.rom",
+              "kind": "code",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x4",
+              "size": 4,
+              "required": true,
+              "tags": [
+                "execution",
+                "validation"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Execution starts here after reset."
+            },
+            {
+              "id": "sg.vector.exception_table",
+              "name": "Exception Vector Table",
+              "address_space": "sg.rom",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0x8",
+              "size": 1016,
+              "required": true,
+              "tags": [
+                "execution",
+                "structural"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Remaining exception and interrupt vectors."
+            }
+          ]
+        },
+        "sg.system.vdp_registers": {
+          "id": "sg.system.vdp_registers",
+          "name": "SG/MD VDP Registers",
+          "address_space": "sg.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0xc00000",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "Video Display Processor memory-mapped registers.",
+          "regions": [
+            {
+              "id": "sg.vdp.data_port",
+              "name": "VDP Data Port",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xc00000",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.vdp.control_port",
+              "name": "VDP Control Port",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xc00004",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "sg.system.z80_map": {
+          "id": "sg.system.z80_map",
+          "name": "SG/MD Z80 Subsystem Map",
+          "address_space": "sg.cpu",
+          "origin": "spec",
+          "confidence": 1.0,
+          "canonical_offset": "0xa00000",
+          "tags": [
+            "execution",
+            "structural"
+          ],
+          "notes": "Z80 RAM and bus control registers.",
+          "regions": [
+            {
+              "id": "sg.z80.ram",
+              "name": "Z80 RAM",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xa00000",
+              "size": 8192,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.z80.bus_request",
+              "name": "Z80 Bus Request",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xa11100",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            },
+            {
+              "id": "sg.z80.reset",
+              "name": "Z80 Reset",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "spec",
+              "confidence": null,
+              "offset": "0xa11200",
+              "size": 2,
+              "required": true,
+              "tags": [
+                "execution"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": null
+            }
+          ]
+        },
+        "sg.cartridge.sram_map": {
+          "id": "sg.cartridge.sram_map",
+          "name": "SG/MD Cartridge SRAM Window",
+          "address_space": "sg.cpu",
+          "origin": "observed",
+          "confidence": 0.9,
+          "canonical_offset": "0x0",
+          "tags": [
+            "structural",
+            "optional"
+          ],
+          "notes": "Commonly used address window for battery-backed SRAM.",
+          "regions": [
+            {
+              "id": "sg.sram.window",
+              "name": "SRAM Window",
+              "address_space": "sg.cpu",
+              "kind": "mapping",
+              "origin": "observed",
+              "confidence": null,
+              "offset": "0x200000",
+              "size": 65536,
+              "required": false,
+              "tags": [
+                "structural",
+                "optional"
+              ],
+              "encoding": null,
+              "byte_order": null,
+              "bank": null,
+              "default_value_mapped": [],
+              "notes": "Typical 64KB SRAM window."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

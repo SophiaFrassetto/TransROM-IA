@@ -17,15 +17,7 @@ SG_VDP_REGISTERS_LAYOUT = BytesLayout(
     address_space="sg.cpu",
     tags=[Tag.execution, Tag.structural],
     notes="Video Display Processor memory-mapped registers.",
-    provides=[
-        "video_system",
-        "vdp_registers",
-    ],
-    requires=[
-        "sg.address_map.standard",
-    ],
-    excludes=None,
-    applies_to=None,
+
     regions=[
         BytesRegion(
             id="sg.vdp.data_port",

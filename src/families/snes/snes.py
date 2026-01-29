@@ -117,30 +117,4 @@ SNES_Family = Family(
         SNES_PPU_REGISTERS,
         SNES_APU_REGISTERS,
     ],
-    minimal_layouts=[
-        "snes.header.lorom",
-        "snes.vectors.lorom",
-        "snes.address_map.lorom",
-    ],
-
-    layout_domains={
-        "header": [
-            "snes.header.lorom",
-            "snes.header.hirom",
-            "snes.header.exhirom",
-        ],
-        "execution": [
-            "snes.vectors.lorom",
-            "snes.vectors.hirom",
-        ],
-        "memory": [
-            "snes.address_map.lorom",
-            "snes.address_map.hirom",
-        ],
-        "system": [
-            "snes.system.ppu_registers",
-            "snes.system.apu_registers",
-            "snes.system.dma_registers",
-        ],
-    },
 )

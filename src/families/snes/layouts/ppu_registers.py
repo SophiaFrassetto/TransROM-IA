@@ -17,17 +17,7 @@ SNES_PPU_REGISTERS = BytesLayout(
     address_space="snes.cpu",
     tags=[Tag.execution, Tag.structural],
     notes="Picture Processing Unit registers.",
-    provides=[
-        "video_system",
-        "ppu_registers",
-    ],
 
-    requires=[
-        "snes.address_map.lorom",
-        "snes.address_map.hirom",
-    ],
-    excludes=None,
-    applies_to=None,
     regions=[
         BytesRegion(
             id="snes.ppu.registers",

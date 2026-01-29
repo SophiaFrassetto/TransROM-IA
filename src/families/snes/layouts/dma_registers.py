@@ -17,18 +17,6 @@ SNES_DMA_REGISTERS = BytesLayout(
     address_space="snes.cpu",
     tags=[Tag.execution, Tag.structural],
     notes="DMA and HDMA channel registers.",
-    provides=[
-        "dma_system",
-    ],
-
-    requires=[
-        "snes.address_map.lorom",
-        "snes.address_map.hirom",
-    ],
-
-    excludes=None,
-    applies_to=None,
-
     regions=[
         BytesRegion(
             id="snes.dma.channel0",

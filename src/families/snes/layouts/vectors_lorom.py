@@ -20,10 +20,7 @@ SNES_VECTORS_LOROM = BytesLayout(
     address_space="snes.rom",
     tags=[Tag.execution, Tag.structural],
     notes="CPU exception and reset vectors for LoROM cartridges.",
-    provides=["execution_vectors"],
-    requires=["snes.header.lorom"],
-    excludes=["snes.vectors.hirom"],
-    applies_to={"mapper": "lorom"},
+
     regions=[
         # --- Emulation mode ---
         BytesRegion(

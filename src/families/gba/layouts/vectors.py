@@ -26,10 +26,6 @@ GBA_VECTORS_LAYOUT = BytesLayout(
         "Most vectors contain a branch instruction to actual handlers.\n"
         "Only the reset vector is strictly required for execution."
     ),
-    provides=["execution_vectors", "execution_entry"],
-    requires=["gba.header.standard"],
-    excludes=None,
-    applies_to=None,
     regions=[
         BytesRegion(
             id="gba.vector.reset",

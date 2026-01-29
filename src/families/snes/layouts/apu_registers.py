@@ -17,18 +17,6 @@ SNES_APU_REGISTERS = BytesLayout(
     address_space="snes.cpu",
     tags=[Tag.execution, Tag.structural],
     notes="Audio Processing Unit I/O registers.",
-    provides=[
-        "audio_system",
-        "apu_registers",
-    ],
-
-    requires=[
-        "snes.address_map.lorom",
-        "snes.address_map.hirom",
-    ],
-
-    excludes=None,
-    applies_to=None,
 
     regions=[
         BytesRegion(

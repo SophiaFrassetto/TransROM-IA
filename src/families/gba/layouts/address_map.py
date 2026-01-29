@@ -25,14 +25,6 @@ GBA_ADDRESS_MAP_LAYOUT = BytesLayout(
     tags=[Tag.structural],
     notes="Fixed memory map of the Game Boy Advance CPU.",
 
-    # Applicability
-    applies_to = None,
-
-    # Relationships
-    provides=["address_map", "cpu_memory_view"],
-    requires=None,
-    excludes=None,
-    replaces=None,
 
     # Regions
     regions=[
@@ -50,18 +42,12 @@ GBA_ADDRESS_MAP_LAYOUT = BytesLayout(
             # Interpretation
             encoding=None,
             byte_order=None,
-            alignment=None,
-            signed=None,
 
             # Context
             address_space="gba.cpu",
             bank=None,
-            mirror_of=None,
             tags=[Tag.structural],
 
-            # Relationships
-            points_to=None,
-            referenced_by=None,
 
             # Validation
             required=True,

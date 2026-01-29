@@ -24,6 +24,8 @@ class Kind(Enum):
     tilemap = "tilemap"
     palette = "palette"
 
+    mapping = "mapping"
+
     unknown = "unknown"
 
 

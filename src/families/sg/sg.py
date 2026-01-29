@@ -61,6 +61,8 @@ sg_family_hardware = FamilyHardware(
     ),
     compression_support=CompressionSupport(
         supported=False,
+        common_types=[],
+        hardware_assisted=False,
         notes="No standard hardware compression.",
     ),
 )
@@ -91,24 +93,4 @@ SG_Family = Family(
         SG_Z80_MAP_LAYOUT,
         SG_SRAM_MAP_LAYOUT,
     ],
-    minimal_layouts = [
-        "sg.vectors.standard",
-        "sg.address_map.standard"
-    ],
-    layout_domains={
-        "execution": [
-            "sg.vectors.standard",
-        ],
-        "memory": [
-            "sg.address_map.standard",
-            "sg.cartridge.sram_map",
-        ],
-        "system": [
-            "sg.system.vdp_registers",
-            "sg.system.z80_map",
-        ],
-        "header": [
-            "sg.header.standard",
-        ],
-    },
 )

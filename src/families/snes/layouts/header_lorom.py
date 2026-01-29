@@ -37,16 +37,6 @@ SNES_HEADER_LOROM_LAYOUT = BytesLayout(
     address_space="snes.rom",
     tags=[Tag.structural],
     notes="Canonical LoROM header layout.",
-    provides=["header", "identity", "mapper:lorom"],
-    requires=[
-        "snes.vectors.lorom",
-        "snes.address_map.lorom",
-    ],
-    excludes=[
-        "snes.header.hirom",
-        "snes.header.exhirom",
-    ],
-    applies_to={"mapper": "lorom"},
     regions=[
     # ------------------------------------------------------------
     # Game Title

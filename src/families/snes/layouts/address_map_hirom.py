@@ -17,22 +17,6 @@ SNES_ADDRESS_MAP_HIROM = BytesLayout(
     address_space="snes.cpu",
     tags=[Tag.structural],
     notes="Logical memory map for HiROM cartridges.",
-    provides=[
-        "address_map",
-        "cpu_memory_view",
-    ],
-
-    requires=[
-        "snes.header.hirom",
-    ],
-
-    excludes=[
-        "snes.address_map.lorom",
-    ],
-
-    applies_to={
-        "mapper": ["hirom", "exhirom"],
-    },
 
     regions=[
         BytesRegion(

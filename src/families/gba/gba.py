@@ -65,9 +65,9 @@ gba_family_hardware = (
             banked=False,
         ),
         banking_model=BankingModel(
-            type="none",
+            supported=False,
+            types="none",
             bank_size=None,
-            switchable_regions=[],
             notes="GBA cartridges typically do not use bank switching",
         ),
         compression_support=CompressionSupport(
@@ -110,22 +110,4 @@ GBA_Family = Family(
         GBA_VECTORS_LAYOUT,
         GBA_SAVE_MAP_LAYOUT,
     ],
-    minimal_layouts=[
-        "gba.header.standard",
-        "gba.vectors.standard",
-        "gba.address_map.standard",
-    ],
-    layout_domains={
-        "header": [
-            "gba.header.standard",
-            "gba.header.multiboot",
-        ],
-        "execution": [
-            "gba.vectors.standard",
-        ],
-        "memory": [
-            "gba.address_map.standard",
-            "gba.cartridge.save_map",
-        ],
-    },
 )

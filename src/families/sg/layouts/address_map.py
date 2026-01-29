@@ -17,13 +17,6 @@ SG_ADDRESS_MAP_LAYOUT = BytesLayout(
     address_space="sg.cpu",
     tags=[Tag.structural],
     notes="Logical memory map of the Mega Drive.",
-    provides=[
-        "address_map",
-        "cpu_memory_view",
-    ],
-    requires=None,
-    excludes=None,
-    applies_to=None,
 
     regions=[
         BytesRegion(

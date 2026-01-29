@@ -14,31 +14,6 @@ SNES_HEADER_EXHIROM_LAYOUT = BytesLayout(
     address_space="snes.rom",
     tags=[Tag.structural, Tag.experimental],
     notes="Extended HiROM header for very large cartridges.",
-    provides=[
-        "header",
-        "identity",
-        "cartridge_metadata",
-        "mapper:exhirom",
-    ],
-
-    requires=[
-        "snes.vectors.hirom",
-        "snes.address_map.hirom",
-    ],
-
-    excludes=[
-        "snes.header.lorom",
-        "snes.header.hirom",
-    ],
-
-    replaces=[
-        "snes.header.hirom",
-    ],
-
-    applies_to={
-        "mapper": "exhirom",
-        "min_rom_size": 0x400000,
-    },
 
     regions=[r.copy_with_offset_delta(0x400000) for r in SNES_HEADER_LOROM_LAYOUT.regions],
 )

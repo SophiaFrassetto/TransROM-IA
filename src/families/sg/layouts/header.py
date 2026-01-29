@@ -17,16 +17,7 @@ SG_HEADER_LAYOUT = BytesLayout(
     address_space="sg.rom",
     tags=[Tag.structural],
     notes="Single fixed header layout for all standard cartridges.",
-    provides=[
-        "header",
-        "identity",
-        "cartridge_metadata",
-    ],
-    requires=[
-        "sg.address_map.standard",
-    ],
-    excludes=None,
-    applies_to=None,
+
     regions=[
         # ------------------------------------------------------------
         # Console Name
@@ -140,7 +131,7 @@ SG_HEADER_LAYOUT = BytesLayout(
             offset=0x190,
             size=2,
             required=True,
-            tags=[Tag.validation, Tag.observed],
+            tags=[Tag.validation],
             notes="Often incorrect even in official cartridges.",
         ),
         # ------------------------------------------------------------

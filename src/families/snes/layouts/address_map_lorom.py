@@ -17,10 +17,6 @@ SNES_ADDRESS_MAP_LOROM = BytesLayout(
     address_space="snes.cpu",
     tags=[Tag.structural],
     notes="Logical memory map for LoROM cartridges.",
-    provides=["address_map"],
-    requires=["snes.header.lorom"],
-    excludes=["snes.address_map.hirom"],
-    applies_to={"mapper": "lorom"},
     regions=[
         BytesRegion(
             id="snes.map.lorom.rom_low",

@@ -18,23 +18,7 @@ SNES_VECTORS_HIROM = BytesLayout(
     address_space="snes.rom",
     tags=[Tag.execution, Tag.structural],
     notes="CPU exception and reset vectors for HiROM cartridges.",
-    provides=[
-        "execution_vectors",
-        "execution_entry",
-    ],
 
-    requires=[
-        "snes.header.hirom",
-        "snes.address_map.hirom",
-    ],
-
-    excludes=[
-        "snes.vectors.lorom",
-    ],
-
-    applies_to={
-        "mapper": ["hirom", "exhirom"],
-    },
     regions=[
         r.copy_with_offset_delta(0x8000)
         for r in SNES_VECTORS_LOROM.regions

@@ -26,11 +26,7 @@ GBA_HEADER_LAYOUT = BytesLayout(
     address_space="gba.rom",
     tags=[Tag.structural],
     notes="Standard fixed GBA cartridge header.",
-    provides=["header", "identity", "cartridge_metadata"],
-    requires=["gba.vectors.standard"],
-    excludes=None,
-    applies_to=None,
-    replaces=None,
+
     regions=[
         BytesRegion(
             id="gba.header",
@@ -519,7 +515,7 @@ GBA_HEADER_LAYOUT = BytesLayout(
                     id="gba.header.reserved_2.zero_filled",
                 )
             ],
-            Tags=[Tag.validation, Tag.deprecated],
+            tags=[Tag.validation, Tag.deprecated],
         ),
     ],
 )

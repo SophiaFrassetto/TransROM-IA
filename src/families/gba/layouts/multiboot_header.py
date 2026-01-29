@@ -20,14 +20,6 @@ GBA_MULTIBOOT_LAYOUT = BytesLayout(
     address_space="gba.rom",
     tags=[Tag.optional, Tag.execution],
     notes="Optional multiboot extension for Normal, Multiplay and Joybus modes.",
-    provides=["multiboot_support", "joybus_support"],
-    requires=[
-        "gba.header.standard",
-        "gba.vectors.standard",
-    ],
-    applies_to={
-        "boot_mode": ["multiboot", "joybus"]
-    },
     regions=[
         BytesRegion(
             id="gba.header.multiboot.ram_entry_point",
